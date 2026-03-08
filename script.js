@@ -6,7 +6,8 @@ const USER = "najibyazbeck";
 const PASS = "Zaqwsx123*";
 const CLIENT_ID = "Mycotech_Beta_" + Math.random().toString(16).substr(2, 6);
 
-const relayNames = ["Relay 1", "Relay 2", "Relay 3", "Relay 4"];
+// Updated device names for Mycotech Hub
+const relayNames = ["Misting System", "Circulation Fan", "CO2 Exhaust", "Light Control"];
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
@@ -14,6 +15,7 @@ const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('relay-container');
     container.innerHTML = ''; 
+    
     relayNames.forEach((name, index) => {
         const i = index + 1;
         container.innerHTML += `
@@ -23,13 +25,13 @@ window.addEventListener('DOMContentLoaded', () => {
                     <span id="badge-${i}" class="state-indicator">OFF</span>
                 </div>
                 <div class="timer-row">
-                    <label style="font-size:0.7rem; color:#94a3b8">SEC:</label>
+                    <label>SEC:</label>
                     <input type="number" id="timer-input-${i}" value="0" min="0">
                     <span id="countdown-${i}" class="countdown"></span>
                 </div>
                 <div class="btn-group">
-                    <button id="btn-on-${i}" class="btn btn-on" onclick="publishCommand(${i}, 'ON')">ON</button>
-                    <button id="btn-off-${i}" class="btn btn-inactive" onclick="publishCommand(${i}, 'OFF')">OFF</button>
+                    <button id="btn-on-${i}" class="btn btn-inactive" onclick="publishCommand(${i}, 'ON')">ON</button>
+                    <button id="btn-off-${i}" class="btn btn-off" onclick="publishCommand(${i}, 'OFF')">OFF</button>
                 </div>
             </div>`;
     });
@@ -38,7 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const log = document.getElementById('debug-log');
         const isHidden = log.style.display === 'none' || log.style.display === '';
         log.style.display = isHidden ? 'block' : 'none';
-        this.innerText = isHidden ? "HIDE LOG" : "SHOW LOG";
+        this.innerText = isHidden ? "HIDE SYSTEM LOG" : "SHOW SYSTEM LOG";
     };
 
     connectMQTT();
@@ -50,11 +52,9 @@ function updateStatus(text, status) {
     if (!bar) return;
     bar.innerText = text;
     if (status === "online") {
-        bar.classList.add('is-online');
-        bar.classList.remove('is-offline');
+        bar.className = 'status-pill is-online';
     } else {
-        bar.classList.add('is-offline');
-        bar.classList.remove('is-online');
+        bar.className = 'status-pill is-offline';
     }
 }
 
@@ -75,39 +75,32 @@ function connectMQTT() {
 
 // --- MESSAGE PROCESSING ---
 client.onMessageArrived = (message) => {
-    lastSignalTime = Date.now(); // Reset the timer whenever ANY data arrives
+    lastSignalTime = Date.now(); 
     const topic = message.destinationName;
     const payload = message.payloadString;
 
-    // 1. Handle Relay Status Updates from ESP32
     if (topic.includes("/status")) {
         const id = topic.split('/')[2];
-        writeLog(`FEEDBACK: ${relayNames[id-1]} is physically ${payload}`, "#94a3b8");
+        writeLog(`FEEDBACK: ${relayNames[id-1]} is ${payload}`, "#94a3b8");
         updateRelayUI(id, payload);
     }
     
-    // 2. Handle Availability (Last Will)
     if (topic.includes("/availability")) {
         updateStatus(payload, payload === "ONLINE" ? "online" : "offline");
-        writeLog(`SYSTEM: Device is now ${payload}`, "#fbbf24");
-    }
-
-    // 3. Handle Boot Logs (If you reset the ESP32)
-    if (topic.includes("/log")) {
-        writeLog(`BOOT DATA: ${payload}`, "#3b82f6");
+        writeLog(`SYSTEM: ${payload}`, "#fbbf24");
     }
 };
 
 client.onConnectionLost = (res) => {
     updateStatus("OFFLINE", "offline");
-    writeLog("Dashboard disconnected from Broker", "#ef4444");
+    writeLog("Lost connection to broker", "#ef4444");
     setTimeout(connectMQTT, 5000);
 };
 
 // --- TIMER & COMMANDS ---
 function publishCommand(num, val) {
     if (!client.isConnected()) {
-        writeLog("CANNOT SEND: MQTT Disconnected", "#ef4444");
+        writeLog("OFFLINE: Cannot send command", "#ef4444");
         return;
     }
 
@@ -116,8 +109,7 @@ function publishCommand(num, val) {
     message.retained = true; 
     client.send(message);
 
-    // LOG THE OUTGOING COMMAND
-    writeLog(`COMMAND: Turn ${relayNames[num-1]} ${val}`, "#f8fafc");
+    writeLog(`SENT: ${relayNames[num-1]} -> ${val}`, "#3b82f6");
 
     if (val === "ON") {
         const seconds = parseInt(document.getElementById(`timer-input-${num}`).value);
@@ -132,13 +124,12 @@ function startTimer(num, seconds) {
     let timeLeft = seconds;
     const display = document.getElementById(`countdown-${num}`);
     
-    writeLog(`TIMER: ${relayNames[num-1]} set for ${seconds}s auto-off`, "#fbbf24");
+    writeLog(`TIMER: ${relayNames[num-1]} auto-off in ${seconds}s`, "#fbbf24");
 
     activeTimers[num] = setInterval(() => {
         timeLeft--;
         display.innerText = `⏱ ${timeLeft}s`;
         if (timeLeft <= 0) {
-            writeLog(`TIMER EXPIRED: Shutting down ${relayNames[num-1]}`, "#ef4444");
             publishCommand(num, "OFF");
             stopTimer(num);
         }
@@ -154,46 +145,41 @@ function stopTimer(num) {
 }
 
 function updateRelayUI(id, state) {
-    const box = document.getElementById(`badge-${id}`).closest('.relay-box');
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
+    const box = badge.closest('.relay-box');
 
     if (!badge || !box) return;
 
-    // Update the Badge Text (Top Right)
     badge.innerText = state;
 
     if (state === "ON") {
-        box.classList.add('active'); // Lights up the side border
-        // ON button is bright, OFF button becomes dark/inactive
-        btnOn.className = "btn btn-on"; 
-        btnOff.className = "btn btn-inactive"; 
+        box.classList.add('active');
+        btnOn.className = "btn btn-on"; // Green
+        btnOff.className = "btn btn-inactive"; // Dark
     } else {
         box.classList.remove('active');
-        // OFF button is bright, ON button becomes dark/inactive
-        btnOn.className = "btn btn-inactive";
-        btnOff.className = "btn btn-off"; 
-        stopTimer(id); // Safety: stop countdown if turned off manually
+        btnOn.className = "btn btn-inactive"; // Dark
+        btnOff.className = "btn btn-off"; // Red
+        stopTimer(id);
     }
 }
 
 function writeLog(msg, color) {
     const logDiv = document.getElementById('debug-log');
     if (!logDiv) return;
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    logDiv.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
+    const time = new Date().toLocaleTimeString([], { hour12: false });
+    logDiv.innerHTML += `<div><span class="log-time">[${time}]</span> <span style="color:${color}">${msg}</span></div>`;
     logDiv.scrollTop = logDiv.scrollHeight;
 }
 
-
+// Heartbeat Loop
 setInterval(() => {
     const elapsed = Math.round((Date.now() - lastSignalTime) / 1000);
     const display = document.getElementById('heartbeat-timer');
     if (display) {
         display.innerText = `Signal: ${elapsed}s ago`;
-        
-        // Optional: Turn text red if signal is older than 30 seconds
         display.style.color = elapsed > 30 ? "#ef4444" : "#94a3b8";
     }
 }, 1000);
