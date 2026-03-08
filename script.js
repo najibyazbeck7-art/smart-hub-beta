@@ -6,36 +6,26 @@ const USER = "najibyazbeck";
 const PASS = "Zaqwsx123*";
 const CLIENT_ID = "Mycotech_Beta_" + Math.random().toString(16).substr(2, 6);
 
-// Updated device names for Mycotech Hub
-const relayNames = ["Misting System", "Circulation Fan", "CO2 Exhaust", "Light Control"];
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
+/**
+ * HELPER: Reads the device name directly from the HTML span.
+ * This allows you to rename things in index.html without touching JS.
+ */
+function getDeviceName(id) {
+    const box = document.querySelector(`.relay-box[data-relay="${id}"]`);
+    if (box) {
+        const nameSpan = box.querySelector('.device-name');
+        return nameSpan ? nameSpan.innerText : `Relay ${id}`;
+    }
+    return `Relay ${id}`;
+}
+
 // --- UI SETUP ---
 window.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('relay-container');
-    container.innerHTML = ''; 
+    // We no longer regenerate the HTML here so that your manual edits in index.html stay.
     
-    relayNames.forEach((name, index) => {
-        const i = index + 1;
-        container.innerHTML += `
-            <div class="relay-box">
-                <div class="relay-label">
-                    <span>${name}</span>
-                    <span id="badge-${i}" class="state-indicator">OFF</span>
-                </div>
-                <div class="timer-row">
-                    <label>SEC:</label>
-                    <input type="number" id="timer-input-${i}" value="0" min="0">
-                    <span id="countdown-${i}" class="countdown"></span>
-                </div>
-                <div class="btn-group">
-                    <button id="btn-on-${i}" class="btn btn-inactive" onclick="publishCommand(${i}, 'ON')">ON</button>
-                    <button id="btn-off-${i}" class="btn btn-off" onclick="publishCommand(${i}, 'OFF')">OFF</button>
-                </div>
-            </div>`;
-    });
-
     document.getElementById('toggle-log-btn').onclick = function() {
         const log = document.getElementById('debug-log');
         const isHidden = log.style.display === 'none' || log.style.display === '';
@@ -81,7 +71,7 @@ client.onMessageArrived = (message) => {
 
     if (topic.includes("/status")) {
         const id = topic.split('/')[2];
-        writeLog(`FEEDBACK: ${relayNames[id-1]} is ${payload}`, "#94a3b8");
+        writeLog(`FEEDBACK: ${getDeviceName(id)} is ${payload}`, "#94a3b8");
         updateRelayUI(id, payload);
     }
     
@@ -109,7 +99,7 @@ function publishCommand(num, val) {
     message.retained = true; 
     client.send(message);
 
-    writeLog(`SENT: ${relayNames[num-1]} -> ${val}`, "#3b82f6");
+    writeLog(`SENT: ${getDeviceName(num)} -> ${val}`, "#3b82f6");
 
     if (val === "ON") {
         const seconds = parseInt(document.getElementById(`timer-input-${num}`).value);
@@ -124,7 +114,7 @@ function startTimer(num, seconds) {
     let timeLeft = seconds;
     const display = document.getElementById(`countdown-${num}`);
     
-    writeLog(`TIMER: ${relayNames[num-1]} auto-off in ${seconds}s`, "#fbbf24");
+    writeLog(`TIMER: ${getDeviceName(num)} auto-off in ${seconds}s`, "#fbbf24");
 
     activeTimers[num] = setInterval(() => {
         timeLeft--;
@@ -140,7 +130,8 @@ function stopTimer(num) {
     if (activeTimers[num]) {
         clearInterval(activeTimers[num]);
         delete activeTimers[num];
-        document.getElementById(`countdown-${num}`).innerText = "";
+        const display = document.getElementById(`countdown-${num}`);
+        if(display) display.innerText = "";
     }
 }
 
@@ -148,20 +139,21 @@ function updateRelayUI(id, state) {
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
+    if (!badge) return;
     const box = badge.closest('.relay-box');
-
-    if (!badge || !box) return;
 
     badge.innerText = state;
 
     if (state === "ON") {
         box.classList.add('active');
-         btnOn.className = "btn btn-inactive"; // Dark
-        btnOff.className = "btn btn-off"; // Red
+        // REVERSED: ON Button is Green, OFF Button is Dark
+        btnOn.className = "btn btn-on"; 
+        btnOff.className = "btn btn-inactive"; 
     } else {
         box.classList.remove('active');
-        btnOn.className = "btn btn-on"; // Green
-        btnOff.className = "btn btn-inactive"; // Dark
+        // REVERSED: OFF Button is Red, ON Button is Dark
+        btnOn.className = "btn btn-inactive"; 
+        btnOff.className = "btn btn-off"; 
         stopTimer(id);
     }
 }
