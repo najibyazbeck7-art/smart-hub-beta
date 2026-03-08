@@ -149,13 +149,13 @@ body {
 }
 
 /* Bright Active States */
-.btn-on { 
+.btn-off { 
     background: #10b981 !important; 
     color: white !important;
     box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
 }
 
-.btn-off { 
+.btn-on { 
     background: #ef4444 !important; 
     color: white !important;
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
