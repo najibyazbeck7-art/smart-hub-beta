@@ -19,6 +19,12 @@ window.addEventListener('beforeinstallprompt', (e) => {
     if (installBtn) installBtn.style.display = 'block';
 });
 
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Service Worker Registered"));
+}
+
 async function installApp() {
     if (deferredPrompt) {
         deferredPrompt.prompt();
