@@ -6,6 +6,29 @@ const USER = "najibyazbeck";
 const PASS = "Zaqwsx123*";
 const CLIENT_ID = "Mycotech_Beta_" + Math.random().toString(16).substr(2, 6);
 
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing on mobile
+    e.preventDefault();
+    // Stash the event so it can be triggered later.
+    deferredPrompt = e;
+    
+    // Show your custom "Install" button (make sure you have this button in your HTML)
+    const installBtn = document.getElementById('install-pwa-btn');
+    if (installBtn) installBtn.style.display = 'block';
+});
+
+async function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        writeLog(`Install prompt outcome: ${outcome}`, "#3b82f6");
+        deferredPrompt = null;
+    }
+}
+
+
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
