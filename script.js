@@ -152,6 +152,14 @@ function stopTimer(num) {
 }
 
 function updateRelayUI(id, state) {
+
+const box = document.getElementById(`badge-${id}`).closest('.relay-box'); // Select the card
+    if (state === "ON") {
+        box.classList.add('active'); // Light up green border
+    } else {
+        box.classList.remove('active'); // Back to grey
+    }
+
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
