@@ -5,7 +5,7 @@ const USER = "najibyazbeck";
 const PASS = "Zaqwsx123*";
 const CLIENT_ID = "Mycotech_Beta_" + Math.random().toString(16).substr(2, 6);
 
-const relayNames = ["Misting System 1", "Circulation Fan 2", "CO2 Exhaust 3", "Light Control 4"];
+const relayNames = ["Relay 1", "Relay 2", "Relay 3", "Relay 4"];
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
