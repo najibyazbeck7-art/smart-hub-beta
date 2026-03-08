@@ -123,7 +123,19 @@ body {
     border-radius: 6px; 
     font-size: 0.7em; 
     font-weight: bold; 
-    background: #1e293b; 
+    background: #1e293b; /* Dark background like original */
+    color: #94a3b8;      /* Grey text when OFF */
+    text-transform: uppercase;
+}
+
+/* Badge color when ON */
+.relay-box.active .state-indicator {
+    color: #10b981; 
+}
+
+/* Badge color when ON */
+.relay-box.active .state-indicator {
+    color: #10b981; 
 }
 
 /* --- BUTTONS --- */
