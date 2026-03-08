@@ -1,4 +1,5 @@
 // --- CONFIG ---
+let lastSignalTime = Date.now();
 const HOST = "64b3984aead9464a9b1aa9c3f34080bb.s1.eu.hivemq.cloud";
 const PORT = 8884; 
 const USER = "najibyazbeck";
@@ -74,6 +75,7 @@ function connectMQTT() {
 
 // --- MESSAGE PROCESSING ---
 client.onMessageArrived = (message) => {
+    lastSignalTime = Date.now(); // Reset the timer whenever ANY data arrives
     const topic = message.destinationName;
     const payload = message.payloadString;
 
@@ -185,3 +187,15 @@ function writeLog(msg, color) {
     logDiv.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
     logDiv.scrollTop = logDiv.scrollHeight;
 }
+
+
+setInterval(() => {
+    const elapsed = Math.round((Date.now() - lastSignalTime) / 1000);
+    const display = document.getElementById('heartbeat-timer');
+    if (display) {
+        display.innerText = `Signal: ${elapsed}s ago`;
+        
+        // Optional: Turn text red if signal is older than 30 seconds
+        display.style.color = elapsed > 30 ? "#ef4444" : "#94a3b8";
+    }
+}, 1000);
