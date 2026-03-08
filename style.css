@@ -7,23 +7,32 @@
     --red: #ef4444;
 }
 
-/* --- Layout & Alignment --- */
+/* --- Global Reset & Centering --- */
 body { 
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
     background: var(--bg); 
     color: var(--text); 
     margin: 0; 
-    padding: 20px; 
+    padding: 0; 
+    /* This centers the container horizontally and vertically */
     display: flex;
-    flex-direction: column;
-    align-items: center; /* Centers the app on desktop */
+    justify-content: center; 
+    min-height: 100vh;
 }
 
-/* Ensures all components stay in a clean, narrow column */
+/* --- The Magic Fix: Main Wrapper --- */
+.app-container {
+    width: 100%;
+    max-width: 500px; /* Limits width to match your original version */
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Ensure all children fill the 500px width */
 .header, #relay-container, .log-btn, #debug-log {
     width: 100%;
-    max-width: 550px; 
-    box-sizing: border-box;
 }
 
 .header { 
@@ -40,19 +49,10 @@ body {
     font-size: 0.75rem; 
     font-weight: bold; 
     text-transform: uppercase;
-    transition: all 0.3s ease;
 }
 
-.is-online { 
-    background: var(--green) !important; 
-    color: white; 
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
-}
-
-.is-offline { 
-    background: var(--red) !important; 
-    color: white; 
-}
+.is-online { background: var(--green) !important; color: white; }
+.is-offline { background: var(--red) !important; color: white; }
 
 /* --- Relay Cards --- */
 #relay-container { 
@@ -67,7 +67,6 @@ body {
     padding: 18px; 
     border-radius: 12px; 
     border: 1px solid #334155; 
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .relay-label { 
@@ -91,7 +90,6 @@ body {
     font-size: 0.7rem;
     color: #94a3b8;
     font-weight: bold;
-    text-transform: uppercase;
 }
 
 .timer-row input { 
@@ -102,21 +100,15 @@ body {
     padding: 5px; 
     border-radius: 4px; 
     text-align: center;
-    outline: none;
-}
-
-.timer-row input:focus {
-    border-color: var(--accent);
 }
 
 .countdown { 
     font-size: 0.85rem; 
     color: #fbbf24; 
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: bold;
+    font-family: monospace;
 }
 
-/* --- Interactive Buttons --- */
+/* --- Buttons --- */
 .btn-group { 
     display: flex; 
     gap: 10px; 
@@ -129,13 +121,7 @@ body {
     border-radius: 8px; 
     font-weight: bold; 
     cursor: pointer; 
-    transition: transform 0.1s, opacity 0.2s;
     text-transform: uppercase;
-    font-size: 0.85rem;
-}
-
-.btn:active {
-    transform: scale(0.98);
 }
 
 .btn-on { background: var(--green); color: white; }
@@ -145,7 +131,6 @@ body {
     background: #2d3748 !important; 
     color: #64748b !important; 
     opacity: 0.5; 
-    cursor: default;
 }
 
 /* --- System Log --- */
@@ -159,8 +144,8 @@ body {
     display: none; 
     border-radius: 8px; 
     border: 1px solid #334155;
-    font-family: 'Consolas', 'Monaco', monospace;
-    line-height: 1.4;
+    font-family: monospace;
+    color: #cbd5e1;
 }
 
 .log-btn { 
@@ -170,10 +155,5 @@ body {
     padding: 12px; 
     border-radius: 8px; 
     cursor: pointer;
-    font-size: 0.8rem;
     font-weight: 600;
-}
-
-.log-btn:hover {
-    background: #475569;
 }
