@@ -154,29 +154,27 @@ function stopTimer(num) {
 }
 
 function updateRelayUI(id, state) {
-
-const box = document.getElementById(`badge-${id}`).closest('.relay-box'); // Select the card
-    if (state === "ON") {
-        box.classList.add('active'); // Light up green border
-    } else {
-        box.classList.remove('active'); // Back to grey
-    }
-
+    const box = document.getElementById(`badge-${id}`).closest('.relay-box');
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
-    if (!badge) return;
 
+    if (!badge || !box) return;
+
+    // Update the Badge Text (Top Right)
     badge.innerText = state;
+
     if (state === "ON") {
-        badge.style.color = "#10b981";
-        btnOn.className = "btn btn-inactive";
-        btnOff.className = "btn btn-off";
+        box.classList.add('active'); // Lights up the side border
+        // ON button is bright, OFF button becomes dark/inactive
+        btnOn.className = "btn btn-on"; 
+        btnOff.className = "btn btn-inactive"; 
     } else {
-        badge.style.color = "#94a3b8";
-        btnOn.className = "btn btn-on";
-        btnOff.className = "btn btn-inactive";
-        stopTimer(id);
+        box.classList.remove('active');
+        // OFF button is bright, ON button becomes dark/inactive
+        btnOn.className = "btn btn-inactive";
+        btnOff.className = "btn btn-off"; 
+        stopTimer(id); // Safety: stop countdown if turned off manually
     }
 }
 
