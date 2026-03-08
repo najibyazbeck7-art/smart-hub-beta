@@ -1,163 +1,130 @@
-// --- 1. CONFIGURATION ---
-const HOST = "64b3984aead9464a9b1aa9c3f34080bb.s1.eu.hivemq.cloud";
-const PORT = 8884; 
-const USER = "najibyazbeck";
-const PASS = "Zaqwsx123*";
-const CLIENT_ID = "Mycotech_Beta_" + Math.random().toString(16).substr(2, 6);
-
-const relayNames = ["Misting System", "Circulation Fan", "CO2 Exhaust", "Light Control"];
-let activeTimers = {}; 
-const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
-
-// --- 2. UI INITIALIZATION ---
-window.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('relay-container');
-    container.innerHTML = ''; 
-    relayNames.forEach((name, index) => {
-        const i = index + 1;
-        container.innerHTML += `
-            <div class="relay-box">
-                <div class="relay-label">
-                    <span>${name}</span>
-                    <span id="badge-${i}" style="color:#94a3b8">OFF</span>
-                </div>
-                <div class="timer-row">
-                    <label style="font-size:0.7rem; color:#94a3b8">AUTO-OFF (SEC):</label>
-                    <input type="number" id="timer-input-${i}" value="0" min="0">
-                    <span id="countdown-${i}" class="countdown"></span>
-                </div>
-                <div class="btn-group">
-                    <button id="btn-on-${i}" class="btn btn-on" onclick="publishCommand(${i}, 'ON')">ON</button>
-                    <button id="btn-off-${i}" class="btn btn-inactive" onclick="publishCommand(${i}, 'OFF')">OFF</button>
-                </div>
-            </div>`;
-    });
-
-    document.getElementById('toggle-log-btn').onclick = function() {
-        const log = document.getElementById('debug-log');
-        const isHidden = log.style.display === 'none' || log.style.display === '';
-        log.style.display = isHidden ? 'block' : 'none';
-        this.innerText = isHidden ? "HIDE SYSTEM LOG" : "SHOW SYSTEM LOG";
-    };
-
-    connectMQTT();
-});
-
-// --- 3. MQTT CONNECT & STATUS ---
-function connectMQTT() {
-    client.connect({
-        userName: USER, password: PASS, useSSL: true,
-        onSuccess: () => {
-            updateStatus("ONLINE", "online");
-            client.subscribe("home/relay/#");
-            writeLog("Connected to HiveMQ Cloud", "#10b981");
-        },
-        onFailure: (err) => {
-            updateStatus("FAILED", "offline");
-            writeLog("Connection Error: " + err.errorMessage, "#ef4444");
-        }
-    });
+:root { 
+    --bg: #0f172a; 
+    --card: #1e293b; 
+    --text: #f8fafc; 
+    --accent: #3b82f6; 
 }
 
-function updateStatus(text, status) {
-    const bar = document.getElementById('status-bar');
-    if (!bar) return;
-    bar.innerText = text;
-    if (status === "online") {
-        bar.classList.add('online-bg');
-        bar.classList.remove('offline-bg');
-    } else {
-        bar.classList.add('offline-bg');
-        bar.classList.remove('online-bg');
-    }
+body { 
+    font-family: sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    margin: 0; 
+    padding: 20px; 
 }
 
-// --- 4. MESSAGE HANDLING ---
-client.onMessageArrived = (message) => {
-    const topic = message.destinationName;
-    const payload = message.payloadString;
-
-    if (topic.includes("/status")) {
-        const i = topic.split('/')[2];
-        updateRelayUI(i, payload);
-    }
-    
-    if (topic.includes("/availability")) {
-        updateStatus(payload, payload === "ONLINE" ? "online" : "offline");
-    }
-
-    if (topic.includes("/log")) {
-        writeLog(`SYSTEM: ${payload}`, "#3b82f6");
-    }
-};
-
-client.onConnectionLost = (res) => {
-    updateStatus("OFFLINE", "offline");
-    writeLog("Connection Lost: " + res.errorMessage, "#ef4444");
-    setTimeout(connectMQTT, 5000);
-};
-
-// --- 5. TIMER ENGINE ---
-function publishCommand(num, val) {
-    const message = new Paho.MQTT.Message(val);
-    message.destinationName = `home/relay/${num}`;
-    message.retained = true; 
-    client.send(message);
-
-    if (val === "ON") {
-        const seconds = parseInt(document.getElementById(`timer-input-${num}`).value);
-        if (seconds > 0) startTimer(num, seconds);
-    } else {
-        stopTimer(num);
-    }
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
 }
 
-function startTimer(num, seconds) {
-    stopTimer(num);
-    let timeLeft = seconds;
-    const display = document.getElementById(`countdown-${num}`);
-    activeTimers[num] = setInterval(() => {
-        timeLeft--;
-        display.innerText = `⏱ ${timeLeft}s`;
-        if (timeLeft <= 0) {
-            publishCommand(num, "OFF");
-            stopTimer(num);
-        }
-    }, 1000);
+/* --- Status Pill Fixed --- */
+.status-pill { 
+    padding: 6px 14px; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    font-weight: bold; 
+    text-transform: uppercase;
+    transition: background 0.3s ease;
 }
 
-function stopTimer(num) {
-    if (activeTimers[num]) {
-        clearInterval(activeTimers[num]);
-        delete activeTimers[num];
-        document.getElementById(`countdown-${num}`).innerText = "";
-    }
+.is-online { 
+    background: #10b981 !important; /* Green */
+    color: white; 
 }
 
-// --- 6. HELPERS ---
-function updateRelayUI(id, state) {
-    const badge = document.getElementById(`badge-${id}`);
-    const btnOn = document.getElementById(`btn-on-${id}`);
-    const btnOff = document.getElementById(`btn-off-${id}`);
-    if (!badge) return;
-
-    badge.innerText = state;
-    if (state === "ON") {
-        badge.style.color = "#10b981";
-        btnOn.className = "btn btn-inactive";
-        btnOff.className = "btn btn-off";
-    } else {
-        badge.style.color = "#94a3b8";
-        btnOn.className = "btn btn-on";
-        btnOff.className = "btn btn-inactive";
-        stopTimer(id);
-    }
+.is-offline { 
+    background: #ef4444 !important; /* Red */
+    color: white; 
 }
 
-function writeLog(msg, color) {
-    const logDiv = document.getElementById('debug-log');
-    if (!logDiv) return;
-    const time = new Date().toLocaleTimeString();
-    logDiv.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
-    logDiv.scrollTop = logDiv.scrollHeight;
+/* --- Relay Cards --- */
+#relay-container { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 15px; 
+}
+
+.relay-box { 
+    background: var(--card); 
+    padding: 15px; 
+    border-radius: 12px; 
+    border: 1px solid #334155; 
+}
+
+.relay-label { 
+    display: flex; 
+    justify-content: space-between; 
+    font-weight: bold; 
+    font-size: 1.1rem; 
+}
+
+.timer-row { 
+    margin-top: 10px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    border-top: 1px solid #334155; 
+    padding-top: 10px; 
+}
+
+.timer-row input { 
+    width: 60px; 
+    background: #0f172a; 
+    border: 1px solid #334155; 
+    color: white; 
+    padding: 5px; 
+    border-radius: 4px; 
+}
+
+.countdown { 
+    font-size: 0.85rem; 
+    color: #fbbf24; 
+    font-family: monospace; 
+}
+
+/* --- Buttons --- */
+.btn-group { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 15px; 
+}
+
+.btn { 
+    flex: 1; 
+    padding: 12px; 
+    border: none; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
+
+.btn-on { background: #10b981; color: white; }
+.btn-off { background: #ef4444; color: white; }
+.btn-inactive { background: #334155; color: #94a3b8; opacity: 0.5; }
+
+/* --- Log --- */
+#debug-log { 
+    background: #000; 
+    height: 180px; 
+    overflow-y: auto; 
+    font-size: 0.8rem; 
+    padding: 10px; 
+    margin-top: 20px; 
+    display: none; 
+    border-radius: 8px; 
+    border: 1px solid #334155;
+    font-family: monospace;
+}
+
+.log-btn { 
+    background: #334155; 
+    color: white; 
+    border: none; 
+    padding: 10px; 
+    width: 100%; 
+    border-radius: 8px; 
+    margin-top: 10px; 
 }

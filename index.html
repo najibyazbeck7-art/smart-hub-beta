@@ -5,70 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mycotech Hub Beta</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
-    <style>
-        :root { --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --accent: #3b82f6; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        
-        /* Fixed Status Pill CSS */
-        .status-pill { 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            font-size: 0.75rem; 
-            font-weight: bold; 
-            text-transform: uppercase;
-        }
-        .online-bg { background: #10b981; color: white; }
-        .offline-bg { background: #ef4444; color: white; }
-
-        #relay-container { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .relay-box { background: var(--card); padding: 15px; border-radius: 12px; border: 1px solid #334155; }
-        .relay-label { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; }
-        
-        .timer-row { 
-            margin-top: 10px; 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            border-top: 1px solid #334155; 
-            padding-top: 10px; 
-        }
-        .timer-row input { 
-            width: 70px; 
-            background: #0f172a; 
-            border: 1px solid #334155; 
-            color: white; 
-            padding: 5px; 
-            border-radius: 4px; 
-        }
-        .countdown { font-size: 0.85rem; color: #fbbf24; font-family: monospace; }
-
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-on { background: #10b981; color: white; }
-        .btn-off { background: #ef4444; color: white; }
-        .btn-inactive { background: #334155; color: #94a3b8; opacity: 0.5; }
-        
-        #debug-log { 
-            background: #000; 
-            height: 200px; 
-            overflow-y: auto; 
-            font-size: 0.8rem; 
-            padding: 10px; 
-            margin-top: 20px; 
-            display: none; 
-            border-radius: 8px; 
-            border: 1px solid #334155;
-            font-family: monospace;
-        }
-        .log-btn { background: #334155; color: white; border: none; padding: 10px; width: 100%; border-radius: 8px; margin-top: 10px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="header">
         <h2>Mycotech <span style="color:var(--accent)">Beta</span></h2>
-        <div id="status-bar" class="status-pill offline-bg">OFFLINE</div>
+        <div id="status-bar" class="status-pill is-offline">OFFLINE</div>
     </div>
 
     <div id="relay-container"></div>

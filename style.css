@@ -1,140 +1,130 @@
+:root { 
+    --bg: #0f172a; 
+    --card: #1e293b; 
+    --text: #f8fafc; 
+    --accent: #3b82f6; 
+}
+
 body { 
-    font-family: 'Segoe UI', system-ui, sans-serif; 
-    background: #0f172a; 
-    color: white; 
+    font-family: sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
     margin: 0; 
-    padding: 10px; /* Reduced padding for mobile edges */
-    display: flex;
-    justify-content: center;
-}
-
-.panel { 
-    display: flex;
-    flex-direction: column; /* Force items to stack vertically */
-    width: 95%;
-    max-width: 400px; 
-    background: #1e293b; 
     padding: 20px; 
-    border-radius: 24px; 
-    margin: auto;
 }
 
-/* --- THE VERTICAL SPACE SAVER --- */
-.header-row {
-    display: flex;
-    justify-content: space-between; /* Pushes title left, status right */
-    align-items: center;
-    margin-bottom: 2px;
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 20px; 
 }
 
-.header-row h2 {
-    margin: 0;
-    font-size: 1.2em;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* Compact Status Pill */
+/* --- Status Pill Fixed --- */
 .status-pill { 
-    padding: 4px 10px; 
-    border-radius: 12px; 
-    font-size: 0.7em; 
-    font-weight: 800; 
-    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 14px; 
+    border-radius: 20px; 
+    font-size: 0.75rem; 
+    font-weight: bold; 
+    text-transform: uppercase;
+    transition: background 0.3s ease;
 }
 
-.online { background: #065f46; color: #34d399; }
-.offline { background: #450a0a; color: #f87171; }
-
-.sub-header {
-    text-align: left;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #334155;
+.is-online { 
+    background: #10b981 !important; /* Green */
+    color: white; 
 }
 
-#heartbeat-timer { 
-    font-size: 0.7em; 
-    color: #94a3b8; 
-    font-family: monospace; 
+.is-offline { 
+    background: #ef4444 !important; /* Red */
+    color: white; 
 }
 
-/* --- COMPACT RELAY CARDS --- */
+/* --- Relay Cards --- */
+#relay-container { 
+    display: grid; 
+    grid-template-columns: 1fr; 
+    gap: 15px; 
+}
+
 .relay-box { 
-    background: #334155; 
-    padding: 12px; /* Thinner cards */
+    background: var(--card); 
+    padding: 15px; 
     border-radius: 12px; 
-    margin-bottom: 10px; 
-    border-left: 4px solid #475569; 
-    transition: 0.3s; 
+    border: 1px solid #334155; 
 }
-
-.relay-box.active { border-left-color: #10b981; }
 
 .relay-label { 
     display: flex; 
     justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 2px; 
-    font-size: 0.9em;
-}
-
-.relay-time { 
-    font-size: 0.65em; 
-    color: #64748b; 
-    margin-bottom: 10px; 
-}
-
-.state-indicator { 
-    padding: 2px 8px; 
-    border-radius: 6px; 
-    font-size: 0.7em; 
     font-weight: bold; 
-    background: #1e293b; 
+    font-size: 1.1rem; 
 }
 
-.btn-group { display: flex; gap: 8px; }
+.timer-row { 
+    margin-top: 10px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    border-top: 1px solid #334155; 
+    padding-top: 10px; 
+}
+
+.timer-row input { 
+    width: 60px; 
+    background: #0f172a; 
+    border: 1px solid #334155; 
+    color: white; 
+    padding: 5px; 
+    border-radius: 4px; 
+}
+
+.countdown { 
+    font-size: 0.85rem; 
+    color: #fbbf24; 
+    font-family: monospace; 
+}
+
+/* --- Buttons --- */
+.btn-group { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 15px; 
+}
 
 .btn { 
     flex: 1; 
-    padding: 10px; /* Slimmer buttons */
+    padding: 12px; 
     border: none; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    color: white; 
-    font-size: 0.9em; 
-}
-
-.btn-inactive { background: #1e293b; color: #475569; }
-.btn-action-on { background: #10b981; }
-.btn-action-off { background: #ef4444; }
-
-/* --- LOG SECTION --- */
-#toggle-log-btn {
-    background: rgba(255,255,255,0.05);
-    color: #64748b;
-    border: 1px solid #334155;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 0.7em;
-    cursor: pointer;
-    width: 100%; /* Makes it span the bottom nicely */
-}
-
-#debug-log { 
-    display: none;
-    margin-top: 10px; 
-    background: #000; 
-    color: #10b981; 
-    font-family: monospace; 
-    font-size: 10px; 
-    padding: 8px; 
     border-radius: 8px; 
-    height: 100px; 
-    overflow-y: auto; 
-    border: 1px solid #333; 
+    font-weight: bold; 
+    cursor: pointer; 
 }
 
-#debug-log.visible { display: block !important; }
-.log-time { color: #64748b; margin-right: 5px; }
+.btn-on { background: #10b981; color: white; }
+.btn-off { background: #ef4444; color: white; }
+.btn-inactive { background: #334155; color: #94a3b8; opacity: 0.5; }
+
+/* --- Log --- */
+#debug-log { 
+    background: #000; 
+    height: 180px; 
+    overflow-y: auto; 
+    font-size: 0.8rem; 
+    padding: 10px; 
+    margin-top: 20px; 
+    display: none; 
+    border-radius: 8px; 
+    border: 1px solid #334155;
+    font-family: monospace;
+}
+
+.log-btn { 
+    background: #334155; 
+    color: white; 
+    border: none; 
+    padding: 10px; 
+    width: 100%; 
+    border-radius: 8px; 
+    margin-top: 10px; 
+}
