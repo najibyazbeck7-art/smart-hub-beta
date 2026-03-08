@@ -1,139 +1,108 @@
-// --- 1. CONFIGURATION & GLOBALS ---
+// --- 1. CONFIG ---
 const HOST = "64b3984aead9464a9b1aa9c3f34080bb.s1.eu.hivemq.cloud";
 const PORT = 8884; 
 const USER = "najibyazbeck";
 const PASS = "Zaqwsx123*";
-// Random ID prevents one login from kicking the other out
-const CLIENT_ID = "Mycotech_Beta_" + Math.random().toString(16).substr(2, 6);
+const CLIENT_ID = "Beta_Dash_" + Math.random().toString(16).substr(2, 6);
 
 const relayNames = ["Misting System", "Circulation Fan", "CO2 Exhaust", "Light Control"];
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
-// --- 2. UI INITIALIZATION ---
+// --- 2. UI GENERATION ---
 window.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('relay-container');
-    if (container) {
-        container.innerHTML = ''; 
-        relayNames.forEach((name, index) => {
-            const i = index + 1;
-            container.innerHTML += `
-                <div id="card-${i}" class="relay-box">
-                    <div class="relay-label">
-                        <span>${name}</span>
-                        <span id="badge-${i}" style="color:#94a3b8">OFFLINE</span>
-                    </div>
-                    <div class="timer-row">
-                        <label style="font-size:0.7rem; color:#94a3b8">TIMER (SEC):</label>
-                        <input type="number" id="timer-input-${i}" value="0" min="0">
-                        <span id="countdown-${i}" class="countdown"></span>
-                    </div>
-                    <div class="btn-group">
-                        <button id="btn-on-${i}" class="btn btn-on" onclick="publishCommand(${i}, 'ON')">START</button>
-                        <button id="btn-off-${i}" class="btn btn-inactive" onclick="publishCommand(${i}, 'OFF')">STOP</button>
-                    </div>
+    container.innerHTML = ''; 
+    relayNames.forEach((name, index) => {
+        const i = index + 1;
+        container.innerHTML += `
+            <div class="relay-box">
+                <div class="relay-label">
+                    <span>${name}</span>
+                    <span id="badge-${i}" style="color:#94a3b8">OFFLINE</span>
                 </div>
-            `;
-        });
-    }
+                <div class="timer-row">
+                    <input type="number" id="timer-input-${i}" value="0" style="width:50px">
+                    <span id="countdown-${i}" style="color:#fbbf24; font-size:0.8rem"></span>
+                </div>
+                <div class="btn-group">
+                    <button id="btn-on-${i}" class="btn btn-on" onclick="publishCommand(${i}, 'ON')">ON</button>
+                    <button id="btn-off-${i}" class="btn btn-off" onclick="publishCommand(${i}, 'OFF')">OFF</button>
+                </div>
+            </div>`;
+    });
 
-    // Toggle Log Visibility
-    const toggleBtn = document.getElementById('toggle-log-btn');
-    if (toggleBtn) {
-        toggleBtn.onclick = () => {
-            const logDiv = document.getElementById('debug-log');
-            const isHidden = logDiv.style.display === 'none' || logDiv.style.display === '';
-            logDiv.style.display = isHidden ? 'block' : 'none';
-            toggleBtn.innerText = isHidden ? "HIDE SYSTEM LOG" : "SHOW SYSTEM LOG";
-        };
-    }
+    const logBtn = document.getElementById('toggle-log-btn');
+    logBtn.onclick = () => {
+        const log = document.getElementById('debug-log');
+        log.style.display = (log.style.display === 'none' || log.style.display === '') ? 'block' : 'none';
+    };
 
     connectMQTT();
 });
 
-// --- 3. MQTT LOGIC ---
+// --- 3. MQTT CONNECT ---
 function connectMQTT() {
-    console.log("Attempting to connect...");
     client.connect({
-        userName: USER,
-        password: PASS,
-        useSSL: true,
-        onSuccess: onConnect,
-        onFailure: (err) => {
-            updateStatus("CONNECTION FAILED", "offline");
-            console.log(err);
-        }
+        userName: USER, password: PASS, useSSL: true,
+        onSuccess: () => {
+            document.getElementById('status-bar').className = "status-pill online";
+            document.getElementById('status-bar').innerText = "ONLINE";
+            // Subscribe to EVERYTHING under home/relay to be safe
+            client.subscribe("home/relay/#");
+            writeLog("Connected & Subscribed to #", "#10b981");
+        },
+        onFailure: (err) => writeLog("Connection Failed: " + err.errorMessage, "#ef4444")
     });
 }
 
-function onConnect() {
-    updateStatus("ONLINE", "online");
-    // Subscribe to all necessary topics
-    client.subscribe("home/relay/+/status");
-    client.subscribe("home/relay/system/availability");
-    client.subscribe("home/relay/system/log");
-    
-    writeLog("Connected to HiveMQ Cloud", "#10b981");
-}
-
-client.onConnectionLost = (responseObject) => {
-    updateStatus("OFFLINE", "offline");
-    writeLog("Connection Lost: " + responseObject.errorMessage, "#ef4444");
-    setTimeout(connectMQTT, 5000); // Auto-reconnect
-};
-
+// --- 4. MESSAGE HANDLING (The Fix) ---
 client.onMessageArrived = (message) => {
     const topic = message.destinationName;
     const payload = message.payloadString;
-    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-    // Handle System Logs (IP Address, Boot messages)
-    if (topic === "home/relay/system/log") {
-        writeLog(`SYSTEM: ${payload}`, "#3b82f6");
-    }
-
-    // Handle Relay Status Updates
-    if (topic.includes("/status")) {
-        const i = topic.split('/')[2];
-        updateRelayUI(i, payload);
-    }
     
+    // LOG EVERY MESSAGE IMMEDIATELY
+    writeLog(`Topic: ${topic} | Msg: ${payload}`, "#3b82f6");
+
+    // Handle System Log
+    if (topic.endsWith("/log")) {
+        // Log is already handled by the writeLog above
+    }
+
     // Handle Availability
-    if (topic.includes("availability")) {
-        updateStatus(payload, payload === "ONLINE" ? "online" : "offline");
+    if (topic.endsWith("/availability")) {
+        document.getElementById('status-bar').innerText = payload;
+    }
+
+    // Handle Relay Status (Matches home/relay/1/status)
+    if (topic.includes("/status")) {
+        const parts = topic.split('/');
+        const i = parts[2]; // Gets the "1" from "home/relay/1/status"
+        updateUI(i, payload);
     }
 };
 
-// --- 4. COMMAND & TIMER ENGINE ---
+// --- 5. TIMER & COMMANDS ---
 function publishCommand(num, val) {
-    if (!client.isConnected()) {
-        writeLog("Error: Not connected to MQTT", "#ef4444");
-        return;
-    }
-
     const message = new Paho.MQTT.Message(val);
     message.destinationName = `home/relay/${num}`;
     message.retained = true; 
     client.send(message);
 
     if (val === "ON") {
-        const seconds = parseInt(document.getElementById(`timer-input-${num}`).value);
-        if (seconds > 0) {
-            startTimer(num, seconds);
-        }
+        const sec = parseInt(document.getElementById(`timer-input-${num}`).value);
+        if (sec > 0) startTimer(num, sec);
     } else {
         stopTimer(num);
     }
 }
 
-function startTimer(num, seconds) {
+function startTimer(num, sec) {
     stopTimer(num);
-    let timeLeft = seconds;
-    const display = document.getElementById(`countdown-${num}`);
-    
+    let timeLeft = sec;
     activeTimers[num] = setInterval(() => {
         timeLeft--;
-        display.innerText = `⏳ ${timeLeft}s`;
+        document.getElementById(`countdown-${num}`).innerText = timeLeft + "s";
         if (timeLeft <= 0) {
             publishCommand(num, "OFF");
             stopTimer(num);
@@ -142,47 +111,20 @@ function startTimer(num, seconds) {
 }
 
 function stopTimer(num) {
-    if (activeTimers[num]) {
-        clearInterval(activeTimers[num]);
-        delete activeTimers[num];
-        document.getElementById(`countdown-${num}`).innerText = "";
-    }
+    clearInterval(activeTimers[num]);
+    document.getElementById(`countdown-${num}`).innerText = "";
 }
 
-// --- 5. HELPER FUNCTIONS ---
-function updateRelayUI(id, state) {
-    const badge = document.getElementById(`badge-${id}`);
-    const btnOn = document.getElementById(`btn-on-${id}`);
-    const btnOff = document.getElementById(`btn-off-${id}`);
-
-    if (!badge) return;
-
-    badge.innerText = state;
-    if (state === "ON") {
-        badge.style.color = "#10b981";
-        btnOn.className = "btn btn-inactive";
-        btnOff.className = "btn btn-off";
-    } else {
-        badge.style.color = "#94a3b8";
-        btnOn.className = "btn btn-on";
-        btnOff.className = "btn btn-inactive";
-        stopTimer(id); // If it turns off, clear timer
-    }
-}
-
-function updateStatus(text, className) {
-    const bar = document.getElementById('status-bar');
-    if (bar) {
-        bar.innerText = text;
-        bar.className = `status-pill ${className}`;
+function updateUI(i, state) {
+    const badge = document.getElementById(`badge-${i}`);
+    if (badge) {
+        badge.innerText = state;
+        badge.style.color = (state === "ON") ? "#10b981" : "#94a3b8";
     }
 }
 
 function writeLog(msg, color) {
     const logDiv = document.getElementById('debug-log');
-    if (logDiv) {
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        logDiv.innerHTML += `<div style="color:${color}">[${time}] ${msg}</div>`;
-        logDiv.scrollTop = logDiv.scrollHeight;
-    }
+    logDiv.innerHTML += `<div style="color:${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+    logDiv.scrollTop = logDiv.scrollHeight;
 }
