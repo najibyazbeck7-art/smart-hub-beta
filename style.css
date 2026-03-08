@@ -124,7 +124,7 @@ body {
     font-size: 0.7em; 
     font-weight: bold; 
     background: #1e293b; 
-    color: #313333      /* Default to Red-ish for OFF state */
+    color: #2e3030     /* Default to Red-ish for OFF state */
     text-transform: uppercase;
 }
 
