@@ -20,7 +20,7 @@ window.addEventListener('DOMContentLoaded', () => {
             <div class="relay-box">
                 <div class="relay-label">
                     <span>${name}</span>
-                    <span id="badge-${i}" style="color:#94a3b8">OFF</span>
+                    <span id="badge-${i}" class="state-indicator">OFF</span>
                 </div>
                 <div class="timer-row">
                     <label style="font-size:0.7rem; color:#94a3b8">SEC:</label>
