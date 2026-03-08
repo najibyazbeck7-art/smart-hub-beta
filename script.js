@@ -147,13 +147,13 @@ function updateRelayUI(id, state) {
     if (state === "ON") {
         box.classList.add('active');
         // REVERSED: ON Button is Green, OFF Button is Dark
-        btnOn.className = "btn btn-on"; 
-        btnOff.className = "btn btn-inactive"; 
+        btnOn.className = "btn btn-inactive"; 
+        btnOff.className = "btn btn-off";
     } else {
         box.classList.remove('active');
         // REVERSED: OFF Button is Red, ON Button is Dark
-        btnOn.className = "btn btn-inactive"; 
-        btnOff.className = "btn btn-off"; 
+        btnOn.className = "btn btn-on"; 
+        btnOff.className = "btn btn-inactive";
         stopTimer(id);
     }
 }
