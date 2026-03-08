@@ -1,0 +1,140 @@
+body { 
+    font-family: 'Segoe UI', system-ui, sans-serif; 
+    background: #0f172a; 
+    color: white; 
+    margin: 0; 
+    padding: 10px; /* Reduced padding for mobile edges */
+    display: flex;
+    justify-content: center;
+}
+
+.panel { 
+    display: flex;
+    flex-direction: column; /* Force items to stack vertically */
+    width: 95%;
+    max-width: 400px; 
+    background: #1e293b; 
+    padding: 20px; 
+    border-radius: 24px; 
+    margin: auto;
+}
+
+/* --- THE VERTICAL SPACE SAVER --- */
+.header-row {
+    display: flex;
+    justify-content: space-between; /* Pushes title left, status right */
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.header-row h2 {
+    margin: 0;
+    font-size: 1.2em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Compact Status Pill */
+.status-pill { 
+    padding: 4px 10px; 
+    border-radius: 12px; 
+    font-size: 0.7em; 
+    font-weight: 800; 
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.online { background: #065f46; color: #34d399; }
+.offline { background: #450a0a; color: #f87171; }
+
+.sub-header {
+    text-align: left;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #334155;
+}
+
+#heartbeat-timer { 
+    font-size: 0.7em; 
+    color: #94a3b8; 
+    font-family: monospace; 
+}
+
+/* --- COMPACT RELAY CARDS --- */
+.relay-box { 
+    background: #334155; 
+    padding: 12px; /* Thinner cards */
+    border-radius: 12px; 
+    margin-bottom: 10px; 
+    border-left: 4px solid #475569; 
+    transition: 0.3s; 
+}
+
+.relay-box.active { border-left-color: #10b981; }
+
+.relay-label { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 2px; 
+    font-size: 0.9em;
+}
+
+.relay-time { 
+    font-size: 0.65em; 
+    color: #64748b; 
+    margin-bottom: 10px; 
+}
+
+.state-indicator { 
+    padding: 2px 8px; 
+    border-radius: 6px; 
+    font-size: 0.7em; 
+    font-weight: bold; 
+    background: #1e293b; 
+}
+
+.btn-group { display: flex; gap: 8px; }
+
+.btn { 
+    flex: 1; 
+    padding: 10px; /* Slimmer buttons */
+    border: none; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    color: white; 
+    font-size: 0.9em; 
+}
+
+.btn-inactive { background: #1e293b; color: #475569; }
+.btn-action-on { background: #10b981; }
+.btn-action-off { background: #ef4444; }
+
+/* --- LOG SECTION --- */
+#toggle-log-btn {
+    background: rgba(255,255,255,0.05);
+    color: #64748b;
+    border: 1px solid #334155;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.7em;
+    cursor: pointer;
+    width: 100%; /* Makes it span the bottom nicely */
+}
+
+#debug-log { 
+    display: none;
+    margin-top: 10px; 
+    background: #000; 
+    color: #10b981; 
+    font-family: monospace; 
+    font-size: 10px; 
+    padding: 8px; 
+    border-radius: 8px; 
+    height: 100px; 
+    overflow-y: auto; 
+    border: 1px solid #333; 
+}
+
+#debug-log.visible { display: block !important; }
+.log-time { color: #64748b; margin-right: 5px; }

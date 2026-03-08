@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    
+    <title>Mycotech Hub</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+</head>
+<body>
+
+    <div class="panel">
+        <div class="header-row">
+            <h2>Channel-4</h2>
+            <div id="status-bar" class="status-pill online">ONLINE</div>
+        </div>
+        
+        <div class="sub-header">
+            <span id="heartbeat-timer">Signal: --</span>
+        </div>
+
+        <div id="relay-container"></div>
+        
+        <div style="text-align: center; margin-top: 15px;">
+            <button id="toggle-log-btn">SHOW LOG</button>
+        </div>
+
+        <div id="debug-log"></div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
