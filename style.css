@@ -3,40 +3,54 @@
     --card: #1e293b; 
     --text: #f8fafc; 
     --accent: #3b82f6; 
+    --green: #10b981;
+    --red: #ef4444;
 }
 
+/* --- Layout & Alignment --- */
 body { 
-    font-family: sans-serif; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
     background: var(--bg); 
     color: var(--text); 
     margin: 0; 
     padding: 20px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers the app on desktop */
+}
+
+/* Ensures all components stay in a clean, narrow column */
+.header, #relay-container, .log-btn, #debug-log {
+    width: 100%;
+    max-width: 550px; 
+    box-sizing: border-box;
 }
 
 .header { 
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    margin-bottom: 20px; 
+    margin-bottom: 25px; 
 }
 
-/* --- Status Pill Fixed --- */
+/* --- Status Pill --- */
 .status-pill { 
     padding: 6px 14px; 
     border-radius: 20px; 
     font-size: 0.75rem; 
     font-weight: bold; 
     text-transform: uppercase;
-    transition: background 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 .is-online { 
-    background: #10b981 !important; /* Green */
+    background: var(--green) !important; 
     color: white; 
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
 }
 
 .is-offline { 
-    background: #ef4444 !important; /* Red */
+    background: var(--red) !important; 
     color: white; 
 }
 
@@ -45,51 +59,67 @@ body {
     display: grid; 
     grid-template-columns: 1fr; 
     gap: 15px; 
+    margin-bottom: 15px;
 }
 
 .relay-box { 
     background: var(--card); 
-    padding: 15px; 
+    padding: 18px; 
     border-radius: 12px; 
     border: 1px solid #334155; 
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .relay-label { 
     display: flex; 
     justify-content: space-between; 
-    font-weight: bold; 
+    align-items: center;
+    font-weight: 600; 
     font-size: 1.1rem; 
+    margin-bottom: 10px;
 }
 
 .timer-row { 
-    margin-top: 10px; 
     display: flex; 
     align-items: center; 
-    gap: 10px; 
-    border-top: 1px solid #334155; 
-    padding-top: 10px; 
+    gap: 8px; 
+    padding: 8px 0;
+    margin-bottom: 10px;
+}
+
+.timer-row label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: bold;
+    text-transform: uppercase;
 }
 
 .timer-row input { 
-    width: 60px; 
+    width: 50px; 
     background: #0f172a; 
     border: 1px solid #334155; 
     color: white; 
     padding: 5px; 
     border-radius: 4px; 
+    text-align: center;
+    outline: none;
+}
+
+.timer-row input:focus {
+    border-color: var(--accent);
 }
 
 .countdown { 
     font-size: 0.85rem; 
     color: #fbbf24; 
-    font-family: monospace; 
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
 }
 
-/* --- Buttons --- */
+/* --- Interactive Buttons --- */
 .btn-group { 
     display: flex; 
     gap: 10px; 
-    margin-top: 15px; 
 }
 
 .btn { 
@@ -99,32 +129,51 @@ body {
     border-radius: 8px; 
     font-weight: bold; 
     cursor: pointer; 
+    transition: transform 0.1s, opacity 0.2s;
+    text-transform: uppercase;
+    font-size: 0.85rem;
 }
 
-.btn-on { background: #10b981; color: white; }
-.btn-off { background: #ef4444; color: white; }
-.btn-inactive { background: #334155; color: #94a3b8; opacity: 0.5; }
+.btn:active {
+    transform: scale(0.98);
+}
 
-/* --- Log --- */
+.btn-on { background: var(--green); color: white; }
+.btn-off { background: var(--red); color: white; }
+
+.btn-inactive { 
+    background: #2d3748 !important; 
+    color: #64748b !important; 
+    opacity: 0.5; 
+    cursor: default;
+}
+
+/* --- System Log --- */
 #debug-log { 
     background: #000; 
-    height: 180px; 
+    height: 200px; 
     overflow-y: auto; 
     font-size: 0.8rem; 
-    padding: 10px; 
-    margin-top: 20px; 
+    padding: 12px; 
+    margin-top: 10px; 
     display: none; 
     border-radius: 8px; 
     border: 1px solid #334155;
-    font-family: monospace;
+    font-family: 'Consolas', 'Monaco', monospace;
+    line-height: 1.4;
 }
 
 .log-btn { 
     background: #334155; 
-    color: white; 
+    color: #cbd5e1; 
     border: none; 
-    padding: 10px; 
-    width: 100%; 
+    padding: 12px; 
     border-radius: 8px; 
-    margin-top: 10px; 
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.log-btn:hover {
+    background: #475569;
 }
