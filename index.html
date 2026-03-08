@@ -9,17 +9,52 @@
 </head>
 <body>
     <div class="app-container">
-        <div class="header">
-            <h2>Mycotech <span style="color:var(--accent)">Beta</span></h2>
-            <div id="status-bar" class="status-pill is-offline">OFFLINE</div>
-        </div>
-<div class="sub-header">
-        <span id="heartbeat-timer">Signal: -- ago</span>
+        
+    <div class="header">
+    <h2 id="main-title">Mycotech <span style="color:#3b82f6">Beta</span></h2>
+    <div id="status-bar" class="status-pill is-offline">OFFLINE</div>
     </div>
-        <div id="relay-container"></div>
+    
+    <div class="sub-header">
+    <span id="heartbeat-timer">Signal: -- ago</span>
+    </div>
 
-        <button class="log-btn" id="toggle-log-btn">SHOW SYSTEM LOG</button>
-        <div id="debug-log"></div>
+    <div id="relay-container">
+        
+    <div class="relay-box" data-relay="1">
+    <div class="relay-label">
+    <span class="device-name">Misting System</span> <span id="badge-1" class="state-indicator">OFF</span>
     </div>
+    <div class="timer-row">
+    <label>SEC:</label>
+    <input type="number" id="timer-input-1" value="0" min="0">
+    <span id="countdown-1" class="countdown"></span>
+    </div>
+    <div class="btn-group">
+    <button id="btn-on-1" class="btn btn-inactive" onclick="publishCommand(1, 'ON')">ON</button>
+    <button id="btn-off-1" class="btn btn-off" onclick="publishCommand(1, 'OFF')">OFF</button>
+    </div>
+    </div>
+
+        <div class="relay-box" data-relay="2">
+            <div class="relay-label">
+                <span class="device-name">Circulation Fan</span> <span id="badge-2" class="state-indicator">OFF</span>
+            </div>
+            <div class="timer-row">
+                <label>SEC:</label>
+                <input type="number" id="timer-input-2" value="0" min="0">
+                <span id="countdown-2" class="countdown"></span>
+            </div>
+            <div class="btn-group">
+                <button id="btn-on-2" class="btn btn-inactive" onclick="publishCommand(2, 'ON')">ON</button>
+                <button id="btn-off-2" class="btn btn-off" onclick="publishCommand(2, 'OFF')">OFF</button>
+            </div>
+        </div>
+
+        </div>
+    
+    <button class="log-btn" id="toggle-log-btn">SHOW SYSTEM LOG</button>
+    <div id="debug-log"></div>
+</div>
     <script src="script.js"></script>
 </body></html>
