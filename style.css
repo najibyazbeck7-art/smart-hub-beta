@@ -1,4 +1,13 @@
-/* --- GLOBAL THEME --- */
+/* =========================================
+    MYCOTECH BETA - MASTER STYLESHEET
+    =========================================
+    Project: Remote Mushroom Lab Dashboard
+    Owner: Antonio
+    Layout: Mobile-First, Compact
+    =========================================
+*/
+
+/* --- 1. GLOBAL THEME & RESET --- */
 body { 
     font-family: 'Segoe UI', system-ui, sans-serif; 
     background: #0f172a; 
@@ -9,7 +18,7 @@ body {
     justify-content: center;
 }
 
-/* The Main Wrapper (Container) */
+/* Main dark card wrapper */
 .app-container { 
     display: flex;
     flex-direction: column; 
@@ -22,7 +31,7 @@ body {
     box-sizing: border-box;
 }
 
-/* --- THE VERTICAL SPACE SAVER HEADER --- */
+/* --- 2. HEADER SECTION --- */
 .header {
     display: flex;
     justify-content: space-between; 
@@ -37,7 +46,7 @@ body {
     letter-spacing: 1px;
 }
 
-/* Compact Status Pill */
+/* Online/Offline pill */
 .status-pill { 
     padding: 4px 10px; 
     border-radius: 12px; 
@@ -46,44 +55,10 @@ body {
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* Color Mappings for the Status Pill */
 .is-online { background: #065f46; color: #34d399; }
 .is-offline { background: #450a0a; color: #f87171; }
 
-/* --- MODERN ACTION BUTTONS (INSTALL/SHARE) --- */
-.action-row {
-    display: flex;
-    gap: 8px;
-    margin: 8px 0;
-}
-
-.action-link {
-    background: rgba(59, 130, 246, 0.1); /* Subtle blue tint */
-    border: 1px solid rgba(59, 130, 246, 0.2);
-    color: #60a5fa; 
-    font-size: 0.65em;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 20px; 
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-.action-link:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: #60a5fa;
-    color: white;
-}
-
-#install-pwa-btn {
-    background: rgba(16, 185, 129, 0.1); /* Subtle green tint */
-    border-color: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-}
-
+/* Sub-header containing the heartbeat signal */
 .sub-header {
     text-align: left;
     margin-bottom: 12px;
@@ -97,7 +72,35 @@ body {
     font-family: monospace; 
 }
 
-/* --- COMPACT RELAY CARDS --- */
+/* --- 3. PWA ACTION BUTTONS (INSTALL/SHARE) --- */
+.action-row {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.action-link {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #60a5fa; 
+    font-size: 0.65em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+#install-pwa-btn {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+/* --- 4. RELAY CONTROL CARDS --- */
 #relay-container { width: 100%; }
 
 .relay-box { 
@@ -105,10 +108,11 @@ body {
     padding: 12px; 
     border-radius: 12px; 
     margin-bottom: 10px; 
-    border-left: 4px solid #475569; 
+    border-left: 4px solid #475569; /* Default gray border */
     transition: 0.3s; 
 }
 
+/* Green glow border when relay is active */
 .relay-box.active { border-left-color: #10b981; }
 
 .relay-label { 
@@ -119,6 +123,23 @@ body {
     font-size: 0.9em;
 }
 
+/* The small "OFF/ON" text in the corner */
+.state-indicator { 
+    padding: 2px 8px; 
+    border-radius: 6px; 
+    font-size: 0.7em; 
+    font-weight: bold; 
+    background: #1e293b; 
+    color: #cbd5e1; /* UPDATED: Light Gray for OFF state */
+    text-transform: uppercase;
+}
+
+/* Changes text to green when active */
+.relay-box.active .state-indicator {
+    color: #34d399; 
+}
+
+/* --- 5. TIMER & INPUT CONTROLS --- */
 .timer-row {
     display: flex;
     align-items: center;
@@ -150,21 +171,7 @@ body {
     font-weight: bold;
 }
 
-.state-indicator { 
-    padding: 2px 8px; 
-    border-radius: 6px; 
-    font-size: 0.7em; 
-    font-weight: bold; 
-    background: #1e293b; 
-    color: #2e3030; 
-    text-transform: uppercase;
-}
-
-.relay-box.active .state-indicator {
-    color: #34d399; 
-}
-
-/* --- BUTTONS (REVERSED LOGIC) --- */
+/* --- 6. ACTION-READY BUTTONS (REVERSED LOGIC) --- */
 .btn-group { display: flex; gap: 8px; }
 
 .btn { 
@@ -179,18 +186,18 @@ body {
     transition: 0.2s;
 }
 
+/* Active buttons (the ones you can click) */
 .btn-on { 
     background: #10b981 !important; 
-    color: white !important;
     box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
 }
 
 .btn-off { 
     background: #ef4444 !important; 
-    color: white !important;
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
 }
 
+/* Dark Inactive buttons (the state that is currently running) */
 .btn-inactive { 
     background: #1e293b !important; 
     color: #475569 !important; 
@@ -199,7 +206,7 @@ body {
     cursor: default;
 }
 
-/* --- LOG SECTION --- */
+/* --- 7. LOGGING & DEBUG SECTION --- */
 .log-btn {
     background: rgba(255,255,255,0.05);
     color: #64748b;
@@ -226,4 +233,5 @@ body {
     border: 1px solid #333; 
 }
 
+/* Utility class to show log when button is clicked */
 #debug-log.visible { display: block !important; }
