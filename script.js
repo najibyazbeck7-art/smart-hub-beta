@@ -1,4 +1,13 @@
-// --- CONFIG ---
+/* =========================================
+    MYCOTECH BETA - MASTER JAVASCRIPT
+    =========================================
+    Project: Remote Mushroom Lab Dashboard
+    Logic: Action-Ready Button States
+    Connection: HiveMQ Cloud (MQTT)
+    =========================================
+*/
+
+// --- 1. CONFIGURATION & GLOBALS ---
 let lastSignalTime = Date.now();
 const HOST = "64b3984aead9464a9b1aa9c3f34080bb.s1.eu.hivemq.cloud";
 const PORT = 8884; 
@@ -10,13 +19,12 @@ let deferredPrompt;
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
-// --- PWA INSTALLATION & SHARING ---
+// --- 2. PWA INSTALLATION & SHARING ---
 
-// Listen for the install prompt event
+// Capture the browser's install prompt
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    // Reveal the install link in the header
     const installBtn = document.getElementById('install-pwa-btn');
     if (installBtn) installBtn.style.display = 'block';
 });
@@ -29,7 +37,7 @@ window.addEventListener('appinstalled', () => {
     writeLog("SYSTEM: Mycotech Dashboard installed", "#10b981");
 });
 
-// Triggered by the "+ Install App" link
+// Function linked to your "+ Install App" header link
 async function installApp() {
     if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -39,7 +47,7 @@ async function installApp() {
     }
 }
 
-// Triggered by the "Share Dashboard" link
+// Function linked to your "Share Dashboard" header link
 async function shareDashboard() {
     if (navigator.share) {
         try {
@@ -62,37 +70,7 @@ if ('serviceWorker' in navigator) {
       .then(() => console.log("Service Worker Active"));
 }
 
-// --- HELPER FUNCTIONS ---
-
-function getDeviceName(id) {
-    const box = document.querySelector(`.relay-box[data-relay="${id}"]`);
-    if (box) {
-        const nameSpan = box.querySelector('.device-name');
-        return nameSpan ? nameSpan.innerText : `Relay ${id}`;
-    }
-    return `Relay ${id}`;
-}
-
-// --- UI SETUP ---
-window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('toggle-log-btn').onclick = function() {
-        const log = document.getElementById('debug-log');
-        const isHidden = log.style.display === 'none' || log.style.display === '';
-        log.style.display = isHidden ? 'block' : 'none';
-        this.innerText = isHidden ? "HIDE SYSTEM LOG" : "SHOW SYSTEM LOG";
-    };
-
-    connectMQTT();
-});
-
-// --- MQTT HANDLING ---
-
-function updateStatus(text, status) {
-    const bar = document.getElementById('status-bar');
-    if (!bar) return;
-    bar.innerText = text;
-    bar.className = (status === "online") ? 'status-pill is-online' : 'status-pill is-offline';
-}
+// --- 3. MQTT CONNECTION & HANDLING ---
 
 function connectMQTT() {
     client.connect({
@@ -114,12 +92,14 @@ client.onMessageArrived = (message) => {
     const topic = message.destinationName;
     const payload = message.payloadString;
 
+    // Handle feedback from ESP32 (Current State)
     if (topic.includes("/status")) {
         const id = topic.split('/')[2];
         writeLog(`FEEDBACK: ${getDeviceName(id)} is ${payload}`, "#94a3b8");
         updateRelayUI(id, payload);
     }
     
+    // Handle LWT (Last Will and Testament) availability
     if (topic.includes("/availability")) {
         updateStatus(payload, payload === "ONLINE" ? "online" : "offline");
         writeLog(`SYSTEM: ${payload}`, "#fbbf24");
@@ -129,10 +109,10 @@ client.onMessageArrived = (message) => {
 client.onConnectionLost = (res) => {
     updateStatus("OFFLINE", "offline");
     writeLog("Lost connection to broker", "#ef4444");
-    setTimeout(connectMQTT, 5000);
+    setTimeout(connectMQTT, 5000); // Auto-reconnect
 };
 
-// --- RELAY CONTROLS ---
+// --- 4. RELAY COMMANDS & TIMER LOGIC ---
 
 function publishCommand(num, val) {
     if (!client.isConnected()) {
@@ -179,11 +159,12 @@ function stopTimer(num) {
     }
 }
 
+// --- 5. UI UPDATES & UTILITIES ---
+
 function updateRelayUI(id, state) {
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
-    
     if (!badge || !btnOn || !btnOff) return;
     
     const box = badge.closest('.relay-box');
@@ -191,19 +172,32 @@ function updateRelayUI(id, state) {
 
     if (state === "ON") {
         box.classList.add('active'); 
-        
-        // If it's ON: "ON" button is useless, "OFF" button is ready for action
+        // Logic: Device is ON, so the ON button is dimmed and OFF is bright red
         btnOn.className = "btn btn-inactive"; 
-        btnOff.className = "btn btn-off"; // Bright Red
+        btnOff.className = "btn btn-off"; 
     } else {
         box.classList.remove('active'); 
-        
-        // If it's OFF: "OFF" button is useless, "ON" button is ready for action
-        btnOn.className = "btn btn-on"; // Bright Green
+        // Logic: Device is OFF, so the OFF button is dimmed and ON is bright green
+        btnOn.className = "btn btn-on"; 
         btnOff.className = "btn btn-inactive"; 
-        
         stopTimer(id);
     }
+}
+
+function updateStatus(text, status) {
+    const bar = document.getElementById('status-bar');
+    if (!bar) return;
+    bar.innerText = text;
+    bar.className = (status === "online") ? 'status-pill is-online' : 'status-pill is-offline';
+}
+
+function getDeviceName(id) {
+    const box = document.querySelector(`.relay-box[data-relay="${id}"]`);
+    if (box) {
+        const nameSpan = box.querySelector('.device-name');
+        return nameSpan ? nameSpan.innerText : `Relay ${id}`;
+    }
+    return `Relay ${id}`;
 }
 
 function writeLog(msg, color) {
@@ -214,7 +208,21 @@ function writeLog(msg, color) {
     logDiv.scrollTop = logDiv.scrollHeight;
 }
 
-// Heartbeat Loop
+// --- 6. INITIALIZATION ---
+
+window.addEventListener('DOMContentLoaded', () => {
+    // Log toggle button logic
+    document.getElementById('toggle-log-btn').onclick = function() {
+        const log = document.getElementById('debug-log');
+        const isHidden = log.style.display === 'none' || log.style.display === '';
+        log.style.display = isHidden ? 'block' : 'none';
+        this.innerText = isHidden ? "HIDE SYSTEM LOG" : "SHOW SYSTEM LOG";
+    };
+
+    connectMQTT();
+});
+
+// Heartbeat Loop (updates "Signal: X seconds ago")
 setInterval(() => {
     const elapsed = Math.round((Date.now() - lastSignalTime) / 1000);
     const display = document.getElementById('heartbeat-timer');
