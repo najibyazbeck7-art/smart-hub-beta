@@ -1,320 +1,281 @@
 /* =========================================
-    MYCOTECH BETA - MASTER STYLESHEET
-    =========================================
-    Project: Remote Mushroom Lab Dashboard
-    Owner: Antonio
-    Layout: Mobile-First, Compact
-    =========================================
-*/
+   MYCOTECH BETA - MASTER STYLES
+   ========================================= */
 
-/* --- 1. GLOBAL THEME & RESET --- */
-body { 
-    font-family: 'Segoe UI', system-ui, sans-serif; 
-    background: #0f172a; 
-    color: white; 
-    margin: 0; 
-    padding: 10px; 
+:root {
+    --bg-dark: #0f172a;       /* Deep Slate Blue */
+    --card-bg: #1e293b;     /* Lighter Slate for containers */
+    --accent-blue: #3b82f6;  /* Brand Blue */
+    --accent-green: #10b981; /* Success/ON Neon Green */
+    --accent-red: #ef4444;   /* Error/OFF Neon Red */
+    --text-main: #f1f5f9;    /* Near White */
+    --text-muted: #94a3b8;   /* Slate Gray */
+    --border-subtle: rgba(148, 163, 184, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: #020617; /* Absolute dark background */
+    color: var(--text-main);
     display: flex;
     justify-content: center;
+    padding: 20px 10px;
 }
 
-/* Main dark card wrapper */
-.app-container { 
-    display: flex;
-    flex-direction: column; 
-    width: 95%;
-    max-width: 400px; 
-    background: #1e293b; 
-    padding: 20px; 
-    border-radius: 24px; 
-    margin: auto;
-    box-sizing: border-box;
+.app-container {
+    width: 100%;
+    max-width: 450px;
+    background: var(--bg-dark);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-subtle);
 }
 
-/* --- 2. HEADER SECTION --- */
+/* --- HEADER --- */
 .header {
     display: flex;
-    justify-content: space-between; 
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 2px;
+    margin-bottom: 20px;
 }
 
-.header h2 {
-    margin: 0;
-    font-size: 1.2em;
+#main-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
     text-transform: uppercase;
+}
+
+.status-pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
     letter-spacing: 1px;
+    transition: all 0.3s ease;
 }
 
-/* Online/Offline pill */
-.status-pill { 
-    padding: 4px 10px; 
-    border-radius: 12px; 
-    font-size: 0.7em; 
-    font-weight: 800; 
-    border: 1px solid rgba(255,255,255,0.1);
-}
+.is-online { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+.is-offline { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
 
-.is-online { background: #065f46; color: #34d399; }
-.is-offline { background: #450a0a; color: #f87171; }
-
-
-/* --- HEADER CONTROLS --- */
-.header-controls {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px; /* Slightly more gap for better vertical spacing */
-}
-
-/* --- Settings Gear --- */
-.settings-link {
-    text-decoration: none;
-    transition: transform 0.2s, color 0.2s;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.settings-link:active {
-    transform: scale(0.9); /* Visual feedback when tapped */
-}
-
-.gear-icon {
-    font-size: 1.2rem; /* Increased size for tap-friendliness */
-    color: #94a3b8; /* Muted slate color */
-}
-
-.settings-link:hover .gear-icon {
-    color: #34d399; /* Neon green glow on hover/active */
-    text-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
-}
-
-/* --- VIEW TOGGLING --- */
-.view-hidden {
-    display: none !important;}
-
-.view-active {
-    display: block !important;}
-
-/* Sub-header containing the heartbeat signal */
-.sub-header {
-    text-align: left;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #334155;
-}
-
-#heartbeat-timer { 
-    font-size: 0.7em; 
-    color: #94a3b8; 
-    font-family: monospace; 
-}
-
-/* --- 3. PWA ACTION BUTTONS (INSTALL/SHARE) --- */
+/* --- ACTION ROW --- */
 .action-row {
     display: flex;
-    gap: 8px;
-    margin: 8px 0;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
 .action-link {
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.2);
-    color: #60a5fa; 
-    font-size: 0.65em;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 20px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-#install-pwa-btn {
-    background: rgba(16, 185, 129, 0.1);
-    border-color: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-}
-
-/* --- 4. RELAY CONTROL CARDS --- */
-#relay-container { width: 100%; }
-
-.relay-box { 
-    background: #334155; 
-    padding: 12px; 
-    border-radius: 12px; 
-    margin-bottom: 10px; 
-    border-left: 4px solid #475569; /* Default gray border */
-    transition: 0.3s; 
-}
-
-/* Green glow border when relay is active */
-.relay-box.active { border-left-color: #10b981; }
-
-.relay-label { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 2px; 
-    font-size: 0.9em;
-}
-
-/* The small "OFF/ON" text in the corner */
-.state-indicator { 
-    padding: 2px 8px; 
-    border-radius: 6px; 
-    font-size: 0.7em; 
-    font-weight: bold; 
-    background: #1e293b; 
-    color: #cbd5e1; /* UPDATED: Light Gray for OFF state */
-    text-transform: uppercase;
-}
-
-/* Changes text to green when active */
-.relay-box.active .state-indicator {
-    color: #34d399; 
-}
-
-/* --- 5. TIMER & INPUT CONTROLS --- */
-.timer-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.timer-row label {
-    font-size: 0.65em; 
-    color: #64748b; 
-    text-transform: uppercase;
-}
-
-.timer-row input {
-    width: 45px;
-    background: #1e293b;
-    border: 1px solid #475569;
-    color: white;
-    font-size: 0.8em;
-    border-radius: 4px;
-    padding: 2px;
-    text-align: center;
-}
-
-.countdown { 
-    font-size: 0.75em; 
-    color: #fbbf24; 
-    font-family: monospace;
-    font-weight: bold;
-}
-
-/* --- 6. ACTION-READY BUTTONS (REVERSED LOGIC) --- */
-.btn-group { display: flex; gap: 8px; }
-
-.btn { 
-    flex: 1; 
-    padding: 10px; 
-    border: none; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    color: white; 
-    font-size: 0.9em; 
-    transition: 0.2s;
-}
-
-/* Active buttons (the ones you can click) */
-.btn-on { 
-    background: #10b981 !important; 
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-}
-
-.btn-off { 
-    background: #ef4444 !important; 
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
-}
-
-/* Dark Inactive buttons (the state that is currently running) */
-.btn-inactive { 
-    background: #1e293b !important; 
-    color: #475569 !important; 
-    opacity: 0.6; 
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-    cursor: default;
-}
-
-/* --- 7. LOGGING & DEBUG SECTION --- */
-.log-btn {
-    background: rgba(255,255,255,0.05);
-    color: #64748b;
-    border: 1px solid #334155;
-    padding: 8px 16px;
+    color: var(--accent-blue);
+    padding: 6px 14px;
     border-radius: 8px;
-    font-size: 0.7em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
     cursor: pointer;
-    width: 100%;
-    margin-top: 10px;
+    margin-right: 8px;
 }
 
-#debug-log { 
-    display: none;
-    margin-top: 10px; 
-    background: #000; 
-    color: #10b981; 
-    font-family: monospace; 
-    font-size: 10px; 
-    padding: 8px; 
-    border-radius: 8px; 
-    height: 100px; 
-    overflow-y: auto; 
-    border: 1px solid #333; 
-}
-
-/* --- ACTION ROW ALIGNMENT --- */
-.action-row {
-    display: flex;
-    justify-content: space-between; /* Puts Share on left, Gear on right */
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.action-group-left {
-    display: flex;
-    gap: 10px;
-}
-
-/* --- 2D GEAR BUTTON --- */
 .settings-btn {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 5px;
     display: flex;
     align-items: center;
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gear-svg {
-    width: 22px;
-    height: 22px;
-    color: #3b82f6; /* Matches your "Beta" text color */
-    stroke-linecap: round;
-    stroke-linejoin: round;
+    width: 24px;
+    height: 24px;
+    color: var(--text-muted);
 }
 
-.settings-btn:hover {
-    transform: rotate(45deg); /* Subtle interaction */
+.settings-btn:hover { transform: rotate(45deg); }
+
+/* --- SUB-HEADER & HEARTBEAT --- */
+.sub-header {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 10px;
+    margin-bottom: 20px;
 }
 
-/* Cleanup Header */
-.header-controls {
+#heartbeat-timer {
+    font-size: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+/* --- VIEW MANAGEMENT --- */
+.view-active { display: block; animation: fadeIn 0.3s ease; }
+.view-hidden { display: none; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- RELAY CARDS --- */
+#relay-container {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.relay-box {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border-subtle);
+    transition: border-color 0.3s ease;
+}
+
+.relay-box.active {
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.05);
+}
+
+.relay-label {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 12px;
 }
 
+.device-name { font-weight: 700; font-size: 0.95rem; }
+.state-indicator { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); }
 
-/* Utility class to show log when button is clicked */
-#debug-log.visible { display: block !important; }
+.timer-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    background: rgba(15, 23, 42, 0.5);
+    padding: 8px;
+    border-radius: 6px;
+}
+
+.timer-row label { font-size: 0.7rem; color: var(--text-muted); font-weight: 800; }
+
+.timer-row input {
+    background: none;
+    border: none;
+    color: var(--accent-blue);
+    width: 50px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.countdown { color: var(--accent-green); font-weight: bold; font-size: 0.85rem; }
+
+/* --- BUTTON GROUPS --- */
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn {
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 800;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-on { background: var(--accent-green); color: #064e3b; }
+.btn-off { background: var(--accent-red); color: #450a0a; }
+.btn-inactive { background: #334155; color: #64748b; opacity: 0.5; }
+
+/* --- SETTINGS PAGE SPECIFICS --- */
+.settings-card {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.setting-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.setting-group label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+.myco-input {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 8px 12px;
+    color: var(--text-main);
+    width: 65%;
+    outline: none;
+}
+
+.myco-input:focus { border-color: var(--accent-blue); }
+
+.setting-toggle {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.btn-save {
+    background: var(--accent-green);
+    color: #064e3b;
+    width: 100%;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 800;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+/* --- LOG SECTION --- */
+.log-btn {
+    width: 100%;
+    background: none;
+    border: 1px dashed var(--text-muted);
+    color: var(--text-muted);
+    padding: 10px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+#debug-log {
+    background: #020617;
+    height: 120px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+    display: none;
+}
+
+.log-time { color: var(--accent-blue); margin-right: 5px; }
