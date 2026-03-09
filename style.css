@@ -1,240 +1,189 @@
-/* --- GLOBAL THEME --- */
-body { 
-    font-family: 'Segoe UI', system-ui, sans-serif; 
-    background: #0f172a; 
-    color: white; 
-    margin: 0; 
-    padding: 10px; 
+/* --- 1. GLOBAL SETTINGS & THEME --- */
+:root {
+    --bg-dark: #0f172a;        /* Deep navy background */
+    --card-bg: #1e293b;        /* Lighter navy for boxes */
+    --text-main: #f8fafc;      /* Off-white text */
+    --text-dim: #94a3b8;       /* Muted grey text */
+    --accent-blue: #3b82f6;    /* Branding blue */
+    --status-green: #10b981;   /* Success/Online green */
+    --status-red: #ef4444;     /* Error/Offline red */
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: 'Inter', sans-serif; /* Modern, compact font */
+    margin: 0;
+    padding: 15px;
     display: flex;
     justify-content: center;
 }
 
-/* The Main Wrapper (Container) */
-.app-container { 
-    display: flex;
-    flex-direction: column; 
-    width: 95%;
-    max-width: 400px; 
-    background: #1e293b; 
-    padding: 20px; 
-    border-radius: 24px; 
-    margin: auto;
-    box-sizing: border-box;
+.app-container {
+    width: 100%;
+    max-width: 450px; /* Kept compact for mobile/handheld use */
 }
 
-/* --- THE VERTICAL SPACE SAVER HEADER --- */
+/* --- 2. HEADER & STATUS BAR --- */
 .header {
     display: flex;
-    justify-content: space-between; 
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 2px;
 }
 
-.header h2 {
+h2 {
+    font-size: 1.2rem;
     margin: 0;
-    font-size: 1.2em;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: -0.5px;
 }
 
-/* Compact Status Pill */
-.status-pill { 
-    padding: 4px 10px; 
-    border-radius: 12px; 
-    font-size: 0.7em; 
-    font-weight: 800; 
-    border: 1px solid rgba(255,255,255,0.1);
+.status-pill {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 800;
 }
 
-/* --- MODERN ACTION BUTTONS (INSTALL/SHARE) --- */
+.is-online { background: rgba(16, 185, 129, 0.2); color: var(--status-green); }
+.is-offline { background: rgba(239, 68, 68, 0.2); color: var(--status-red); }
+
+/* --- 3. MODERN ACTION LINKS (Install/Share) --- */
 .action-row {
     display: flex;
     gap: 8px;
-    margin: 8px 0;
+    margin: 10px 0;
 }
 
 .action-link {
-    background: rgba(59, 130, 246, 0.1); /* Very subtle blue tint */
+    background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.2);
-    color: #60a5fa; /* Lighter, modern blue */
+    color: #60a5fa;
     font-size: 0.65em;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
     padding: 4px 10px;
-    border-radius: 20px; /* Pill shape */
-    text-decoration: none;
-    transition: all 0.2s ease;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.2s ease;
 }
 
-.action-link:hover {
-    background: rgba(59, 130, 246, 0.2);
-    border-color: #60a5fa;
-    color: white;
-}
-
-/* Specific style for Install to make it stand out slightly */
 #install-pwa-btn {
-    background: rgba(16, 185, 129, 0.1); /* Subtle green tint */
+    background: rgba(16, 185, 129, 0.1);
     border-color: rgba(16, 185, 129, 0.2);
     color: #34d399;
 }
 
-#install-pwa-btn:hover {
-    background: rgba(16, 185, 129, 0.2);
-    border-color: #34d399;
-}
-
-/* Color Mappings for the Status Pill */
-.is-online { background: #065f46; color: #34d399; }
-.is-offline { background: #450a0a; color: #f87171; }
-
-.sub-header {
-    text-align: left;
+/* --- 4. RELAY BOXES (Cards) --- */
+.relay-box {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
     margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #334155;
+    border-left: 4px solid #334155; /* Default "Off" border */
+    transition: border-color 0.3s;
 }
 
-#heartbeat-timer { 
-    font-size: 0.7em; 
-    color: #94a3b8; 
-    font-family: monospace; 
+/* Lights up when the relay is physically ON */
+.relay-box.active {
+    border-left-color: var(--status-green);
 }
 
-/* --- COMPACT RELAY CARDS --- */
-#relay-container { width: 100%; }
-
-.relay-box { 
-    background: #334155; 
-    padding: 12px; 
-    border-radius: 12px; 
-    margin-bottom: 10px; 
-    border-left: 4px solid #475569; 
-    transition: 0.3s; 
+.relay-label {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    margin-bottom: 10px;
 }
 
-/* When the relay is ON, the side border glows green */
-.relay-box.active { border-left-color: #10b981; }
-
-.relay-label { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 2px; 
-    font-size: 0.9em;
+.state-indicator {
+    font-size: 0.7rem;
+    color: var(--text-dim);
 }
 
+/* --- 5. TIMER & INPUTS --- */
 .timer-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 10px;
+    margin-bottom: 15px;
 }
 
-.timer-row label {
-    font-size: 0.65em; 
-    color: #64748b; 
-    text-transform: uppercase;
-}
-
-.timer-row input {
-    width: 45px;
-    background: #1e293b;
-    border: 1px solid #475569;
+input[type="number"] {
+    background: #0f172a;
+    border: 1px solid #334155;
     color: white;
-    font-size: 0.8em;
+    padding: 4px;
     border-radius: 4px;
-    padding: 2px;
-    text-align: center;
+    width: 50px;
+    font-size: 0.8rem;
 }
 
-.countdown { 
-    font-size: 0.75em; 
-    color: #fbbf24; 
-    font-family: monospace;
+.countdown {
+    color: #fbbf24; /* Amber color for warning/timer */
+    font-size: 0.8rem;
     font-weight: bold;
 }
 
-/* State Badge (the small "OFF" text in the corner) */
-.state-indicator { 
-    padding: 2px 8px; 
-    border-radius: 6px; 
-    font-size: 0.7em; 
-    font-weight: bold; 
-    background: #1e293b; 
-    color: #2e3030     /* Default to Red-ish for OFF state */
-    text-transform: uppercase;
+/* --- 6. ACTION-READY BUTTONS --- */
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
-/* Badge color when ON */
-.relay-box.active .state-indicator {
-    color: #34d399;      /* Green-ish for ON state */
-}
-
-/* --- BUTTONS (REVERSED LOGIC) --- */
-.btn-group { display: flex; gap: 8px; }
-
-.btn { 
-    flex: 1; 
-    padding: 10px; 
-    border: none; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    color: white; 
-    font-size: 0.9em; 
+.btn {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
     transition: 0.2s;
 }
 
-/* Bright Active States */
-.btn-on { 
-    background: #10b981 !important; 
-    color: white !important;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+/* Bright Green: Shown when device is OFF and ready to start */
+.btn-on {
+    background: var(--status-green);
+    color: white;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
 }
 
-.btn-off { 
-    background: #ef4444 !important; 
-    color: white !important;
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+/* Bright Red: Shown when device is ON and ready to stop */
+.btn-off {
+    background: var(--status-red);
+    color: white;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
-/* Dark Inactive State */
-.btn-inactive { 
-    background: #1e293b !important; 
-    color: #475569 !important; 
-    opacity: 0.6; 
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-    cursor: default;
+/* Dimmed State: Shown when a button's action is currently blocked */
+.btn-inactive {
+    background: #1e293b;
+    color: #475569;
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
-/* --- LOG SECTION --- */
-.log-btn {
-    background: rgba(255,255,255,0.05);
-    color: #64748b;
-    border: 1px solid #334155;
-    padding: 8px 16px;
+/* --- 7. DEBUG LOG --- */
+#debug-log {
+    background: #000;
+    font-family: monospace;
+    font-size: 0.7rem;
+    padding: 10px;
+    height: 150px;
+    overflow-y: auto;
     border-radius: 8px;
-    font-size: 0.7em;
-    cursor: pointer;
-    width: 100%;
     margin-top: 10px;
+    display: none; /* Hidden by default */
 }
 
-#debug-log { 
-    display: none;
-    margin-top: 10px; 
-    background: #000; 
-    color: #10b981; 
-    font-family: monospace; 
-    font-size: 10px; 
-    padding: 8px; 
-    border-radius: 8px; 
-    height: 100px; 
-    overflow-y: auto; 
-    border: 1px solid #333; 
-}
+.log-time { color: #64748b; margin-right: 5px; }
 
-#debug-log.visible { display: block !important; }
+.log-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px dashed #334155;
+    color: var(--text-dim);
+    padding: 8px;
+    font-size: 0.6rem;
+    margin-top: 20px;
+    cursor: pointer;
+}
