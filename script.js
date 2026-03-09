@@ -231,3 +231,23 @@ setInterval(() => {
         display.style.color = elapsed > 30 ? "#ef4444" : "#94a3b8";
     }
 }, 1000);
+
+
+function toggleView() {
+    const mainView = document.getElementById('main-view');
+    const settingsView = document.getElementById('settings-view');
+    const navBtn = document.getElementById('nav-btn');
+
+    if (mainView.classList.contains('view-active')) {
+        // Go to Settings
+        mainView.classList.replace('view-active', 'view-hidden');
+        settingsView.classList.replace('view-hidden', 'view-active');
+        navBtn.innerHTML = "◀ Back";
+        loadSettingsInputs(); // Populate inputs with current names from memory
+    } else {
+        // Go back to Home
+        settingsView.classList.replace('view-active', 'view-hidden');
+        mainView.classList.replace('view-hidden', 'view-active');
+        navBtn.innerHTML = '<span class="gear-icon">⚙️</span> Settings';
+    }
+}
