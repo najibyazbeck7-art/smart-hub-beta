@@ -1,21 +1,28 @@
 {
-  "short_name": "Mycotech",
-  "name": "Mycotech Hub",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
-  "orientation": "portrait",
+  /* 1. APP NAMING */
+  "short_name": "Mycotech",        /* Name on the phone home screen */
+  "name": "Mycotech Hub",           /* Full name in app lists/installers */
+
+  /* 2. STARTUP SETTINGS */
+  "start_url": "./",                /* Opens your main dashboard folder */
+  "scope": "./",                    /* All files in this folder are part of the app */
+  "display": "standalone",          /* HIDES browser bar (Looks like a real app) */
+  "orientation": "portrait",        /* Locks screen to vertical mode */
+
+  /* 3. THEME & COLORS */
+  "background_color": "#0f172a",    /* Color shown during the splash screen loading */
+  "theme_color": "#0f172a",         /* Color of the phone's top clock/battery bar */
+
+  /* 4. APP ICONS */
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon-192.png",        /* Standard icon size */
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any maskable"
+      "purpose": "any maskable"     /* Allows Android to shape it (circle/square) */
     },
     {
-      "src": "icon-512.png",
+      "src": "icon-512.png",        /* High-res icon for splash screen */
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
