@@ -2,8 +2,7 @@
     MYCOTECH BETA - MASTER JAVASCRIPT
     =========================================
     Project: Remote Mushroom Lab Dashboard
-    Logic: Action-Ready Button States
-    Connection: HiveMQ Cloud (MQTT)
+    Logic: Action-Ready Button States + Settings Persistence
     =========================================
 */
 
@@ -19,9 +18,12 @@ let deferredPrompt;
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
-// --- 2. PWA INSTALLATION & SHARING ---
+// --- 2. PWA & SYSTEM ---
 
-// Capture the browser's install prompt
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then(() => console.log("SW Active"));
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
@@ -29,48 +31,14 @@ window.addEventListener('beforeinstallprompt', (e) => {
     if (installBtn) installBtn.style.display = 'block';
 });
 
-// Hide the install link once installed
-window.addEventListener('appinstalled', () => {
-    const installBtn = document.getElementById('install-pwa-btn');
-    if (installBtn) installBtn.style.display = 'none';
-    deferredPrompt = null;
-    writeLog("SYSTEM: Mycotech Dashboard installed", "#10b981");
-});
-
-// Function linked to your "+ Install App" header link
 async function installApp() {
     if (deferredPrompt) {
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        writeLog(`Install prompt: ${outcome}`, "#3b82f6");
         deferredPrompt = null;
     }
 }
 
-// Function linked to your "Share Dashboard" header link
-async function shareDashboard() {
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: 'Mycotech Beta',
-                text: 'Mushroom Lab Remote Control',
-                url: window.location.href
-            });
-        } catch (err) {
-            writeLog("Share closed", "#94a3b8");
-        }
-    } else {
-        writeLog("Sharing not supported on this browser", "#ef4444");
-    }
-}
-
-// Register Service Worker for PWA compliance
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("Service Worker Active"));
-}
-
-// --- 3. MQTT CONNECTION & HANDLING ---
+// --- 3. MQTT CONNECTION ---
 
 function connectMQTT() {
     client.connect({
@@ -92,39 +60,31 @@ client.onMessageArrived = (message) => {
     const topic = message.destinationName;
     const payload = message.payloadString;
 
-    // Handle feedback from ESP32 (Current State)
     if (topic.includes("/status")) {
         const id = topic.split('/')[2];
         writeLog(`FEEDBACK: ${getDeviceName(id)} is ${payload}`, "#94a3b8");
         updateRelayUI(id, payload);
     }
     
-    // Handle LWT (Last Will and Testament) availability
     if (topic.includes("/availability")) {
         updateStatus(payload, payload === "ONLINE" ? "online" : "offline");
         writeLog(`SYSTEM: ${payload}`, "#fbbf24");
     }
 };
 
-client.onConnectionLost = (res) => {
+client.onConnectionLost = () => {
     updateStatus("OFFLINE", "offline");
-    writeLog("Lost connection to broker", "#ef4444");
-    setTimeout(connectMQTT, 5000); // Auto-reconnect
+    setTimeout(connectMQTT, 5000);
 };
 
-// --- 4. RELAY COMMANDS & TIMER LOGIC ---
+// --- 4. RELAY & TIMER LOGIC ---
 
 function publishCommand(num, val) {
-    if (!client.isConnected()) {
-        writeLog("OFFLINE: Cannot send command", "#ef4444");
-        return;
-    }
+    if (!client.isConnected()) return;
     const message = new Paho.MQTT.Message(val);
     message.destinationName = `home/relay/${num}`;
     message.retained = true; 
     client.send(message);
-
-    writeLog(`SENT: ${getDeviceName(num)} -> ${val}`, "#3b82f6");
 
     if (val === "ON") {
         const seconds = parseInt(document.getElementById(`timer-input-${num}`).value);
@@ -138,8 +98,6 @@ function startTimer(num, seconds) {
     stopTimer(num);
     let timeLeft = seconds;
     const display = document.getElementById(`countdown-${num}`);
-    writeLog(`TIMER: ${getDeviceName(num)} auto-off in ${seconds}s`, "#fbbf24");
-
     activeTimers[num] = setInterval(() => {
         timeLeft--;
         display.innerText = `⏱ ${timeLeft}s`;
@@ -159,27 +117,81 @@ function stopTimer(num) {
     }
 }
 
-// --- 5. UI UPDATES & UTILITIES ---
+// --- 5. SETTINGS & PERSISTENCE ---
+
+function toggleView() {
+    const mainView = document.getElementById('main-view');
+    const settingsView = document.getElementById('settings-view');
+    const navBtn = document.getElementById('nav-btn');
+
+    if (mainView.classList.contains('view-active')) {
+        mainView.classList.replace('view-active', 'view-hidden');
+        settingsView.classList.replace('view-hidden', 'view-active');
+        navBtn.innerHTML = "◀ Back";
+        loadSettingsInputs();
+    } else {
+        settingsView.classList.replace('view-active', 'view-hidden');
+        mainView.classList.replace('view-hidden', 'view-active');
+        navBtn.innerHTML = '<span class="gear-icon">⚙️</span> Settings';
+    }
+}
+
+function loadSettingsInputs() {
+    for (let i = 1; i <= 4; i++) {
+        const saved = localStorage.getItem(`relay-name-${i}`);
+        if (saved) document.getElementById(`name-input-${i}`).value = saved;
+    }
+    const logVis = localStorage.getItem('show-log-button') === 'true';
+    document.getElementById('log-vis-checkbox').checked = logVis;
+}
+
+function saveAllSettings() {
+    for (let i = 1; i <= 4; i++) {
+        const val = document.getElementById(`name-input-${i}`).value;
+        if (val) localStorage.setItem(`relay-name-${i}`, val);
+    }
+    const logVis = document.getElementById('log-vis-checkbox').checked;
+    localStorage.setItem('show-log-button', logVis);
+    
+    applyNamesToDashboard();
+    toggleView();
+    writeLog("SYSTEM: Settings Saved", "#34d399");
+}
+
+function applyNamesToDashboard() {
+    for (let i = 1; i <= 4; i++) {
+        const savedName = localStorage.getItem(`relay-name-${i}`);
+        if (savedName) {
+            const label = document.querySelector(`.relay-box[data-relay="${i}"] .device-name`);
+            if (label) label.innerText = savedName;
+        }
+    }
+    const showLog = localStorage.getItem('show-log-button') === 'true';
+    const logBtn = document.getElementById('toggle-log-btn');
+    if (logBtn) logBtn.style.display = showLog ? 'block' : 'none';
+}
+
+// --- 6. UI UTILITIES ---
+
+function getDeviceName(id) {
+    return localStorage.getItem(`relay-name-${id}`) || `Relay ${id}`;
+}
 
 function updateRelayUI(id, state) {
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
-    if (!badge || !btnOn || !btnOff) return;
-    
     const box = badge.closest('.relay-box');
+    
     badge.innerText = state;
-
     if (state === "ON") {
-        box.classList.add('active'); 
-        // Logic: Device is ON, so the ON button is dimmed and OFF is bright red
-        btnOn.className = "btn btn-inactive"; 
-        btnOff.className = "btn btn-off"; 
+        box.classList.add('active');
+        btnOn.className = "btn btn-inactive";
+        btnOff.className = "btn btn-off";
     } else {
-        box.classList.remove('active'); 
-        // Logic: Device is OFF, so the OFF button is dimmed and ON is bright green
-        btnOn.className = "btn btn-on"; 
-        btnOff.className = "btn btn-inactive"; 
+        box.classList.remove('active');
+        btnOn.className = "btn btn-on";
+        btnOff.className = "btn btn-inactive";
         stopTimer(id);
     }
 }
@@ -191,15 +203,6 @@ function updateStatus(text, status) {
     bar.className = (status === "online") ? 'status-pill is-online' : 'status-pill is-offline';
 }
 
-function getDeviceName(id) {
-    const box = document.querySelector(`.relay-box[data-relay="${id}"]`);
-    if (box) {
-        const nameSpan = box.querySelector('.device-name');
-        return nameSpan ? nameSpan.innerText : `Relay ${id}`;
-    }
-    return `Relay ${id}`;
-}
-
 function writeLog(msg, color) {
     const logDiv = document.getElementById('debug-log');
     if (!logDiv) return;
@@ -208,21 +211,20 @@ function writeLog(msg, color) {
     logDiv.scrollTop = logDiv.scrollHeight;
 }
 
-// --- 6. INITIALIZATION ---
+// --- 7. INITIALIZATION ---
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Log toggle button logic
     document.getElementById('toggle-log-btn').onclick = function() {
         const log = document.getElementById('debug-log');
         const isHidden = log.style.display === 'none' || log.style.display === '';
         log.style.display = isHidden ? 'block' : 'none';
-        this.innerText = isHidden ? "HIDE SYSTEM LOG" : "SHOW SYSTEM LOG";
+        this.innerText = isHidden ? "HIDE LOG" : "SHOW LOG";
     };
 
+    applyNamesToDashboard();
     connectMQTT();
 });
 
-// Heartbeat Loop (updates "Signal: X seconds ago")
 setInterval(() => {
     const elapsed = Math.round((Date.now() - lastSignalTime) / 1000);
     const display = document.getElementById('heartbeat-timer');
@@ -231,23 +233,3 @@ setInterval(() => {
         display.style.color = elapsed > 30 ? "#ef4444" : "#94a3b8";
     }
 }, 1000);
-
-
-function toggleView() {
-    const mainView = document.getElementById('main-view');
-    const settingsView = document.getElementById('settings-view');
-    const navBtn = document.getElementById('nav-btn');
-
-    if (mainView.classList.contains('view-active')) {
-        // Go to Settings
-        mainView.classList.replace('view-active', 'view-hidden');
-        settingsView.classList.replace('view-hidden', 'view-active');
-        navBtn.innerHTML = "◀ Back";
-        loadSettingsInputs(); // Populate inputs with current names from memory
-    } else {
-        // Go back to Home
-        settingsView.classList.replace('view-active', 'view-hidden');
-        mainView.classList.replace('view-hidden', 'view-active');
-        navBtn.innerHTML = '<span class="gear-icon">⚙️</span> Settings';
-    }
-}
