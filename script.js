@@ -183,19 +183,25 @@ function updateRelayUI(id, state) {
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
-    if (!badge) return;
+    
+    if (!badge || !btnOn || !btnOff) return;
+    
     const box = badge.closest('.relay-box');
-
     badge.innerText = state;
 
     if (state === "ON") {
-        box.classList.add('active');
-        btnOn.className = "btn btn-on"; 
-        btnOff.className = "btn btn-inactive"; 
-    } else {
-        box.classList.remove('active');
+        box.classList.add('active'); 
+        
+        // If it's ON: "ON" button is useless, "OFF" button is ready for action
         btnOn.className = "btn btn-inactive"; 
-        btnOff.className = "btn btn-off"; 
+        btnOff.className = "btn btn-off"; // Bright Red
+    } else {
+        box.classList.remove('active'); 
+        
+        // If it's OFF: "OFF" button is useless, "ON" button is ready for action
+        btnOn.className = "btn btn-on"; // Bright Green
+        btnOff.className = "btn btn-inactive"; 
+        
         stopTimer(id);
     }
 }
