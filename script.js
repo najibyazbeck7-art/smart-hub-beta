@@ -7,41 +7,63 @@ const PASS = "Zaqwsx123*";
 const CLIENT_ID = "Mycotech_Beta_" + Math.random().toString(16).substr(2, 6);
 
 let deferredPrompt;
+let activeTimers = {}; 
+const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
+// --- PWA INSTALLATION & SHARING ---
+
+// Listen for the install prompt event
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
-    // Stash the event so it can be triggered later.
     deferredPrompt = e;
-    
-    // Show your custom "Install" button (make sure you have this button in your HTML)
+    // Reveal the install link in the header
     const installBtn = document.getElementById('install-pwa-btn');
     if (installBtn) installBtn.style.display = 'block';
 });
 
+// Hide the install link once installed
+window.addEventListener('appinstalled', () => {
+    const installBtn = document.getElementById('install-pwa-btn');
+    if (installBtn) installBtn.style.display = 'none';
+    deferredPrompt = null;
+    writeLog("SYSTEM: Mycotech Dashboard installed", "#10b981");
+});
 
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
-      .then(() => console.log("Service Worker Registered"));
-}
-
+// Triggered by the "+ Install App" link
 async function installApp() {
     if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        writeLog(`Install prompt outcome: ${outcome}`, "#3b82f6");
+        writeLog(`Install prompt: ${outcome}`, "#3b82f6");
         deferredPrompt = null;
     }
 }
 
+// Triggered by the "Share Dashboard" link
+async function shareDashboard() {
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Mycotech Beta',
+                text: 'Mushroom Lab Remote Control',
+                url: window.location.href
+            });
+        } catch (err) {
+            writeLog("Share closed", "#94a3b8");
+        }
+    } else {
+        writeLog("Sharing not supported on this browser", "#ef4444");
+    }
+}
 
-let activeTimers = {}; 
-const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
+// Register Service Worker for PWA compliance
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log("Service Worker Active"));
+}
 
-/**
- * HELPER: Reads the device name directly from the HTML span.
- * This allows you to rename things in index.html without touching JS.
- */
+// --- HELPER FUNCTIONS ---
+
 function getDeviceName(id) {
     const box = document.querySelector(`.relay-box[data-relay="${id}"]`);
     if (box) {
@@ -53,8 +75,6 @@ function getDeviceName(id) {
 
 // --- UI SETUP ---
 window.addEventListener('DOMContentLoaded', () => {
-    // We no longer regenerate the HTML here so that your manual edits in index.html stay.
-    
     document.getElementById('toggle-log-btn').onclick = function() {
         const log = document.getElementById('debug-log');
         const isHidden = log.style.display === 'none' || log.style.display === '';
@@ -65,16 +85,13 @@ window.addEventListener('DOMContentLoaded', () => {
     connectMQTT();
 });
 
-// --- MQTT STATUS HANDLING ---
+// --- MQTT HANDLING ---
+
 function updateStatus(text, status) {
     const bar = document.getElementById('status-bar');
     if (!bar) return;
     bar.innerText = text;
-    if (status === "online") {
-        bar.className = 'status-pill is-online';
-    } else {
-        bar.className = 'status-pill is-offline';
-    }
+    bar.className = (status === "online") ? 'status-pill is-online' : 'status-pill is-offline';
 }
 
 function connectMQTT() {
@@ -92,7 +109,6 @@ function connectMQTT() {
     });
 }
 
-// --- MESSAGE PROCESSING ---
 client.onMessageArrived = (message) => {
     lastSignalTime = Date.now(); 
     const topic = message.destinationName;
@@ -116,13 +132,13 @@ client.onConnectionLost = (res) => {
     setTimeout(connectMQTT, 5000);
 };
 
-// --- TIMER & COMMANDS ---
+// --- RELAY CONTROLS ---
+
 function publishCommand(num, val) {
     if (!client.isConnected()) {
         writeLog("OFFLINE: Cannot send command", "#ef4444");
         return;
     }
-
     const message = new Paho.MQTT.Message(val);
     message.destinationName = `home/relay/${num}`;
     message.retained = true; 
@@ -142,7 +158,6 @@ function startTimer(num, seconds) {
     stopTimer(num);
     let timeLeft = seconds;
     const display = document.getElementById(`countdown-${num}`);
-    
     writeLog(`TIMER: ${getDeviceName(num)} auto-off in ${seconds}s`, "#fbbf24");
 
     activeTimers[num] = setInterval(() => {
@@ -175,14 +190,12 @@ function updateRelayUI(id, state) {
 
     if (state === "ON") {
         box.classList.add('active');
-        // REVERSED: ON Button is Green, OFF Button is Dark
-        btnOn.className = "btn btn-inactive"; 
-        btnOff.className = "btn btn-off";
+        btnOn.className = "btn btn-on"; 
+        btnOff.className = "btn btn-inactive"; 
     } else {
         box.classList.remove('active');
-        // REVERSED: OFF Button is Red, ON Button is Dark
-        btnOn.className = "btn btn-on"; 
-        btnOff.className = "btn btn-inactive";
+        btnOn.className = "btn btn-inactive"; 
+        btnOff.className = "btn btn-off"; 
         stopTimer(id);
     }
 }
