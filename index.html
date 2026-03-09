@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Channel-4 Beta</title>
+    <title>Mycotech Beta</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
@@ -11,95 +11,121 @@
 <body>
     <div class="app-container">
         
-    <div class="header">
-    <h2 id="main-title">Mycotech <span style="color:#3b82f6">Beta</span></h2>
-
-    <div class="header-controls">
-    <div id="status-bar" class="status-pill is-offline">OFFLINE</div>
-    <a href="javascript:void(0)" class="settings-link" onclick="toggleView()" id="nav-btn">
-    <span class="gear-icon">⚙️</span> Settings
-    </a>
-    </div>
-        
-    </div>
-
-    <div class="action-row">
-    <button id="install-pwa-btn" class="action-link" style="display: none;" onclick="installApp()">+ Install</button>
-    <button id="share-btn" class="action-link" onclick="shareDashboard()">Share</button>
-    </div>
-    
-    <div class="sub-header">
-    <span id="heartbeat-timer">Signal: -- ago</span>
-    </div>
-
-    <div id="relay-container">
-        
-    <div class="relay-box" data-relay="1">
-    <div class="relay-label">
-    <span class="device-name">ANTONIO</span> <span id="badge-1" class="state-indicator">OFF</span>
-    </div>
-    <div class="timer-row">
-    <label>SEC:</label>
-    <input type="number" id="timer-input-1" value="0" min="0">
-    <span id="countdown-1" class="countdown"></span>
-    </div>
-    <div class="btn-group">
-    <button id="btn-on-1" class="btn btn-inactive" onclick="publishCommand(1, 'ON')">ON</button>
-    <button id="btn-off-1" class="btn btn-off" onclick="publishCommand(1, 'OFF')">OFF</button>
-    </div>
-    </div>
-
-    <div class="relay-box" data-relay="2">
-    <div class="relay-label">
-    <span class="device-name">ELIO</span> <span id="badge-2" class="state-indicator">OFF</span>
-    </div>
-    <div class="timer-row">
-    <label>SEC:</label>
-    <input type="number" id="timer-input-2" value="0" min="0">
-    <span id="countdown-2" class="countdown"></span>
-    </div>
-    <div class="btn-group">
-    <button id="btn-on-2" class="btn btn-inactive" onclick="publishCommand(2, 'ON')">ON</button>
-    <button id="btn-off-2" class="btn btn-off" onclick="publishCommand(2, 'OFF')">OFF</button>
-    </div>
-    </div>
-
-    <div class="relay-box" data-relay="3">
-    <div class="relay-label">
-    <span class="device-name">STYVIE</span> <span id="badge-3" class="state-indicator">OFF</span>
-    </div>
-    <div class="timer-row">
-    <label>SEC:</label>
-    <input type="number" id="timer-input-3" value="0" min="0">
-    <span id="countdown-3" class="countdown"></span>
-    </div>
-    <div class="btn-group">
-    <button id="btn-on-3" class="btn btn-inactive" onclick="publishCommand(3, 'ON')">ON</button>
-    <button id="btn-off-3" class="btn btn-off" onclick="publishCommand(3, 'OFF')">OFF</button>
-    </div>
-    </div>
-
-
-    <div class="relay-box" data-relay="4">
-    <div class="relay-label">
-    <span class="device-name">GLUE</span> <span id="badge-4" class="state-indicator">OFF</span>
-    </div>
-    <div class="timer-row">
-    <label>SEC:</label>
-    <input type="number" id="timer-input-4" value="0" min="0">
-    <span id="countdown-4" class="countdown"></span>
-    </div>
-    <div class="btn-group">
-    <button id="btn-on-4" class="btn btn-inactive" onclick="publishCommand(4, 'ON')">ON</button>
-    <button id="btn-off-4" class="btn btn-off" onclick="publishCommand(4, 'OFF')">OFF</button>
-    </div>
-    </div>
-        
-
+        <div class="header">
+            <h2 id="main-title">Mycotech <span style="color:#3b82f6">Beta</span></h2>
+            <div class="header-controls">
+                <div id="status-bar" class="status-pill is-offline">OFFLINE</div>
+                <a href="javascript:void(0)" class="settings-link" onclick="toggleView()" id="nav-btn">
+                    <span class="gear-icon">⚙️</span> Settings
+                </a>
+            </div>
         </div>
-    
-    <button class="log-btn" id="toggle-log-btn">SHOW SYSTEM LOG</button>
-    <div id="debug-log"></div>
-</div>
-    <script src="script.js"></script>
-</body></html>
+
+        <div class="action-row">
+            <button id="install-pwa-btn" class="action-link" style="display: none;" onclick="installApp()">+ Install</button>
+            <button id="share-btn" class="action-link" onclick="shareDashboard()">Share</button>
+        </div>
+        
+        <div class="sub-header">
+            <span id="heartbeat-timer">Signal: -- ago</span>
+        </div>
+
+        <div id="main-view" class="view-active">
+            <div id="relay-container">
+                <div class="relay-box" data-relay="1">
+                    <div class="relay-label">
+                        <span class="device-name">Relay 1</span> <span id="badge-1" class="state-indicator">OFF</span>
+                    </div>
+                    <div class="timer-row">
+                        <label>SEC:</label>
+                        <input type="number" id="timer-input-1" value="0" min="0">
+                        <span id="countdown-1" class="countdown"></span>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-on-1" class="btn btn-inactive" onclick="publishCommand(1, 'ON')">ON</button>
+                        <button id="btn-off-1" class="btn btn-off" onclick="publishCommand(1, 'OFF')">OFF</button>
+                    </div>
+                </div>
+
+                <div class="relay-box" data-relay="2">
+                    <div class="relay-label">
+                        <span class="device-name">Relay 2</span> <span id="badge-2" class="state-indicator">OFF</span>
+                    </div>
+                    <div class="timer-row">
+                        <label>SEC:</label>
+                        <input type="number" id="timer-input-2" value="0" min="0">
+                        <span id="countdown-2" class="countdown"></span>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-on-2" class="btn btn-inactive" onclick="publishCommand(2, 'ON')">ON</button>
+                        <button id="btn-off-2" class="btn btn-off" onclick="publishCommand(2, 'OFF')">OFF</button>
+                    </div>
+                </div>
+
+                <div class="relay-box" data-relay="3">
+                    <div class="relay-label">
+                        <span class="device-name">Relay 3</span> <span id="badge-3" class="state-indicator">OFF</span>
+                    </div>
+                    <div class="timer-row">
+                        <label>SEC:</label>
+                        <input type="number" id="timer-input-3" value="0" min="0">
+                        <span id="countdown-3" class="countdown"></span>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-on-3" class="btn btn-inactive" onclick="publishCommand(3, 'ON')">ON</button>
+                        <button id="btn-off-3" class="btn btn-off" onclick="publishCommand(3, 'OFF')">OFF</button>
+                    </div>
+                </div>
+
+                <div class="relay-box" data-relay="4">
+                    <div class="relay-label">
+                        <span class="device-name">Relay 4</span> <span id="badge-4" class="state-indicator">OFF</span>
+                    </div>
+                    <div class="timer-row">
+                        <label>SEC:</label>
+                        <input type="number" id="timer-input-4" value="0" min="0">
+                        <span id="countdown-4" class="countdown"></span>
+                    </div>
+                    <div class="btn-group">
+                        <button id="btn-on-4" class="btn btn-inactive" onclick="publishCommand(4, 'ON')">ON</button>
+                        <button id="btn-off-4" class="btn btn-off" onclick="publishCommand(4, 'OFF')">OFF</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="log-btn" id="toggle-log-btn">SHOW SYSTEM LOG</button>
+            <div id="debug-log"></div>
+        </div>
+
+        <div id="settings-view" class="view-hidden">
+            <div class="settings-card">
+                <h3 style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 15px;">DEVICE NAMES</h3>
+                
+                <div class="setting-group">
+                    <label>Relay 1</label>
+                    <input type="text" id="name-input-1" class="myco-input" placeholder="e.g. Intake Fan">
+                </div>
+                <div class="setting-group">
+                    <label>Relay 2</label>
+                    <input type="text" id="name-input-2" class="myco-input" placeholder="e.g. Humidifier">
+                </div>
+                <div class="setting-group">
+                    <label>Relay 3</label>
+                    <input type="text" id="name-input-3" class="myco-input" placeholder="e.g. Exhaust">
+                </div>
+                <div class="setting-group">
+                    <label>Relay 4</label>
+                    <input type="text" id="name-input-4" class="myco-input" placeholder="e.g. Lights">
+                </div>
+                
+                <div class="setting-toggle">
+                    <span>Show Log Button</span>
+                    <input type="checkbox" id="log-vis-checkbox">
+                </div>
+            </div>
+            <button onclick="saveAllSettings()" class="btn btn-on" style="width: 100%;">SAVE & APPLY</button>
+        </div>
+
+    </div> <script src="script.js"></script>
+</body>
+</html>
