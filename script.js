@@ -125,14 +125,18 @@ function toggleView() {
     const navBtn = document.getElementById('nav-btn');
 
     if (mainView.classList.contains('view-active')) {
+        // Switching TO Settings
         mainView.classList.replace('view-active', 'view-hidden');
         settingsView.classList.replace('view-hidden', 'view-active');
-        navBtn.innerHTML = "◀ Back";
+        // Only show the X icon, no text
+        navBtn.innerHTML = '<span class="gear-icon" style="color: #ef4444;">✖</span>'; 
         loadSettingsInputs();
     } else {
+        // Switching BACK to Dashboard
         settingsView.classList.replace('view-active', 'view-hidden');
         mainView.classList.replace('view-hidden', 'view-active');
-        navBtn.innerHTML = '<span class="gear-icon">⚙️</span> Settings';
+        // Only show the Gear icon, no text
+        navBtn.innerHTML = '<span class="gear-icon">⚙️</span>'; 
     }
 }
 
