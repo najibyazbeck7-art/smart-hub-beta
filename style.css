@@ -46,28 +46,44 @@ body {
     border: 1px solid rgba(255,255,255,0.1);
 }
 
-/* install & Share links */
+/* --- MODERN ACTION BUTTONS (INSTALL/SHARE) --- */
 .action-row {
     display: flex;
-    gap: 12px;
-    margin-top: 4px;
-    margin-bottom: 8px;
+    gap: 8px;
+    margin: 8px 0;
 }
 
 .action-link {
-    background: none;
-    border: none;
-    color: #3b82f6; /* Matching your blue accent */
-    font-size: 0.7em;
-    font-weight: bold;
+    background: rgba(59, 130, 246, 0.1); /* Very subtle blue tint */
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    color: #60a5fa; /* Lighter, modern blue */
+    font-size: 0.65em;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    padding: 0;
-    text-decoration: underline;
+    padding: 4px 10px;
+    border-radius: 20px; /* Pill shape */
+    text-decoration: none;
+    transition: all 0.2s ease;
 }
 
 .action-link:hover {
-    color: #60a5fa;
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #60a5fa;
+    color: white;
+}
+
+/* Specific style for Install to make it stand out slightly */
+#install-pwa-btn {
+    background: rgba(16, 185, 129, 0.1); /* Subtle green tint */
+    border-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+}
+
+#install-pwa-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #34d399;
 }
 
 /* Color Mappings for the Status Pill */
