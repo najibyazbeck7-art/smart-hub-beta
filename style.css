@@ -240,7 +240,7 @@ body {
     letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.2s ease;
-    height: 20px;             /* Fixed height ensures all buttons are perfectly uniform 36 */
+    height: 30px;             /* Fixed height ensures all buttons are perfectly uniform 36 */
 }
 
 /* Active buttons (the ones you can click) */
