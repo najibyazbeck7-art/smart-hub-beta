@@ -165,12 +165,13 @@ body {
 /* Green glow border when relay is active */
 .relay-box.active { border-left-color: #10b981; }
 
-.relay-label { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 2px; 
-    font-size: 0.9em;
+.relay-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1); /* Very thin slate line */
 }
 
 /* The small "OFF/ON" text in the corner */
@@ -326,6 +327,14 @@ body {
     align-items: flex-end;
 }
 
+
+.device-name {
+    color: #94a3b8;           /* Muted slate color */
+    font-size: 0.8rem;        /* Smaller, precise size */
+    font-weight: 700;         /* Bold enough to read */
+    text-transform: uppercase;/* All caps for the "label" look */
+    letter-spacing: 1px;      /* Spaced out professional feel */
+}
 
 /* Utility class to show log when button is clicked */
 #debug-log.visible { display: block !important; }
