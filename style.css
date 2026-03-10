@@ -133,12 +133,13 @@ body {
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.2);
     color: #60a5fa; 
-    font-size: 0.65em;
+    font-size: 0.7rem;
+    height: 28px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     cursor: pointer;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 20px;
     text-decoration: none;
     transition: all 0.2s ease;
@@ -223,18 +224,23 @@ body {
 }
 
 /* --- 6. ACTION-READY BUTTONS (REVERSED LOGIC) --- */
-.btn-group { display: flex; gap: 8px; }
+.btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;                 /* Thinner gap between ON and OFF */
+}
 
-.btn { 
-    flex: 1; 
-    padding: 10px; 
-    border: none; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-weight: bold; 
-    color: white; 
-    font-size: 0.9em; 
-    transition: 0.2s;
+.btn {
+    padding: 8px 12px;        /* Reduced vertical padding from 12px to 8px */
+    border-radius: 6px;       /* Slightly tighter corners for a modern look */
+    border: none;
+    font-weight: 800;
+    font-size: 0.75rem;       /* Slightly smaller text to match the new relay names */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 36px;             /* Fixed height ensures all buttons are perfectly uniform */
 }
 
 /* Active buttons (the ones you can click) */
