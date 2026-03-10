@@ -2,7 +2,7 @@
     MYCOTECH BETA - MASTER JAVASCRIPT
     =========================================
     Project: Remote Mushroom Lab Dashboard
-    Logic: MQTT Retained Names + Persistence
+    Logic: MQTT Retained Names + Log Preservation
     =========================================
 */
 
@@ -33,12 +33,12 @@ function connectMQTT() {
         userName: USER, password: PASS, useSSL: true,
         onSuccess: () => {
             updateStatus("ONLINE", "online");
-            // Subscribe to status AND the persistent names
             client.subscribe("home/relay/#"); 
             writeLog("Connected to Cloud Database", "#10b981");
         },
         onFailure: (err) => {
             updateStatus("FAILED", "offline");
+            writeLog("Connection Error: " + err.errorMessage, "#ef4444");
             setTimeout(connectMQTT, 5000);
         }
     });
@@ -49,13 +49,12 @@ client.onMessageArrived = (message) => {
     const topic = message.destinationName;
     const payload = message.payloadString;
 
-    // Handle Relay Status Updates
     if (topic.includes("/status")) {
         const id = topic.split('/')[2];
         updateRelayUI(id, payload);
+        writeLog(`Relay ${id} is now ${payload}`, "#94a3b8");
     }
     
-    // NEW: Handle Persistent Name Updates from Broker
     if (topic.includes("/name")) {
         const id = topic.split('/')[2];
         localStorage.setItem(`relay-name-${id}`, payload);
@@ -64,11 +63,13 @@ client.onMessageArrived = (message) => {
 
     if (topic.includes("/availability")) {
         updateStatus(payload, payload === "ONLINE" ? "online" : "offline");
+        writeLog(`System Status: ${payload}`, "#fbbf24");
     }
 };
 
-client.onConnectionLost = () => {
+client.onConnectionLost = (err) => {
     updateStatus("OFFLINE", "offline");
+    writeLog("Connection Lost. Reconnecting...", "#ef4444");
     setTimeout(connectMQTT, 5000);
 };
 
@@ -136,7 +137,7 @@ function loadSettingsInputs() {
         const saved = localStorage.getItem(`relay-name-${i}`);
         if (saved) document.getElementById(`name-input-${i}`).value = saved;
     }
-    const logVis = localStorage.getItem('show-log-button') === 'true';
+    const logVis = localStorage.getItem('show-log-button') !== 'false'; // Default to true
     document.getElementById('log-vis-checkbox').checked = logVis;
 }
 
@@ -144,10 +145,7 @@ function saveAllSettings() {
     for (let i = 1; i <= 4; i++) {
         const val = document.getElementById(`name-input-${i}`).value;
         if (val) {
-            // Save to Local Cache
             localStorage.setItem(`relay-name-${i}`, val);
-            
-            // Publish to MQTT with RETAIN flag for Cloud Persistence
             if (client.isConnected()) {
                 const nameMsg = new Paho.MQTT.Message(val);
                 nameMsg.destinationName = `home/relay/${i}/name`;
@@ -161,7 +159,7 @@ function saveAllSettings() {
     
     applyNamesToDashboard();
     toggleView();
-    writeLog("SYSTEM: Cloud Sync Complete", "#34d399");
+    writeLog("Configuration saved & synced", "#10b981");
 }
 
 function applyNamesToDashboard() {
@@ -172,15 +170,20 @@ function applyNamesToDashboard() {
             labels.forEach(el => el.innerText = savedName);
         }
     }
-    const showLog = localStorage.getItem('show-log-button') === 'true';
+    const savedLogSetting = localStorage.getItem('show-log-button');
+    const showLog = savedLogSetting === null ? true : savedLogSetting === 'true';
     const logBtn = document.getElementById('toggle-log-btn');
     if (logBtn) logBtn.style.display = showLog ? 'block' : 'none';
 }
 
 // --- 6. UI UTILITIES ---
 
-function getDeviceName(id) {
-    return localStorage.getItem(`relay-name-${id}`) || `Relay ${id}`;
+function writeLog(msg, color) {
+    const logDiv = document.getElementById('debug-log');
+    if (!logDiv) return;
+    const time = new Date().toLocaleTimeString([], { hour12: false });
+    logDiv.innerHTML += `<div><span class="log-time">[${time}]</span> <span style="color:${color}">${msg}</span></div>`;
+    logDiv.scrollTop = logDiv.scrollHeight;
 }
 
 function updateRelayUI(id, state) {
@@ -206,28 +209,26 @@ function updateRelayUI(id, state) {
 
 function updateStatus(text, status) {
     const bar = document.getElementById('status-bar');
-    if (!bar) return;
-    bar.innerText = text;
-    bar.className = (status === "online") ? 'status-pill is-online' : 'status-pill is-offline';
-}
-
-function writeLog(msg, color) {
-    const logDiv = document.getElementById('debug-log');
-    if (!logDiv) return;
-    const time = new Date().toLocaleTimeString([], { hour12: false });
-    logDiv.innerHTML += `<div><span class="log-time">[${time}]</span> <span style="color:${color}">${msg}</span></div>`;
-    logDiv.scrollTop = logDiv.scrollHeight;
+    if (bar) {
+        bar.innerText = text;
+        bar.className = (status === "online") ? 'status-pill is-online' : 'status-pill is-offline';
+    }
 }
 
 // --- 7. INITIALIZATION ---
 
 window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('toggle-log-btn').onclick = function() {
-        const log = document.getElementById('debug-log');
-        const isHidden = log.style.display === 'none' || log.style.display === '';
-        log.style.display = isHidden ? 'block' : 'none';
-        this.innerText = isHidden ? "HIDE LOG" : "SHOW LOG";
-    };
+    const logBtn = document.getElementById('toggle-log-btn');
+    const logDiv = document.getElementById('debug-log');
+
+    if (logBtn && logDiv) {
+        logBtn.onclick = function() {
+            const isHidden = logDiv.style.display === 'none' || logDiv.style.display === '';
+            logDiv.style.display = isHidden ? 'block' : 'none';
+            this.innerText = isHidden ? "HIDE LOG" : "SHOW LOG";
+            if (isHidden) logDiv.scrollTop = logDiv.scrollHeight;
+        };
+    }
 
     applyNamesToDashboard();
     connectMQTT();
