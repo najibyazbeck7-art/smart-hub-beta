@@ -116,11 +116,11 @@ body {
 }
 
 #heartbeat-timer {
-    font-size: 0.6rem;
+    font-size: 0.3rem;
     font-family: monospace;
     color: var(--text-muted);
-    margin-top: 10px;
-    letter-spacing: 0.5px;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
     text-transform: uppercase;
 }
 
