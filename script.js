@@ -2,7 +2,7 @@
     MYCOTECH BETA - MASTER JAVASCRIPT
     =========================================
     Project: Remote Mushroom Lab Dashboard
-    Logic: Action-Ready States + SVG Settings Persistence
+    Logic: MQTT Retained Names + Persistence
     =========================================
 */
 
@@ -18,28 +18,12 @@ let deferredPrompt;
 let activeTimers = {}; 
 const client = new Paho.MQTT.Client(HOST, PORT, CLIENT_ID);
 
-// SVG Icons (2D Gear and Close)
 const GEAR_SVG = `<svg class="gear-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"></path><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path></svg>`;
 const CLOSE_SVG = `<svg class="gear-svg" style="color:#ef4444" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-// --- 2. PWA & SYSTEM ---
-
+// --- 2. PWA ---
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(() => console.log("SW Active"));
-}
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    const installBtn = document.getElementById('install-pwa-btn');
-    if (installBtn) installBtn.style.display = 'block';
-});
-
-async function installApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt = null;
-    }
 }
 
 // --- 3. MQTT CONNECTION ---
@@ -49,12 +33,13 @@ function connectMQTT() {
         userName: USER, password: PASS, useSSL: true,
         onSuccess: () => {
             updateStatus("ONLINE", "online");
-            client.subscribe("home/relay/#");
-            writeLog("Connected to HiveMQ Cloud", "#10b981");
+            // Subscribe to status AND the persistent names
+            client.subscribe("home/relay/#"); 
+            writeLog("Connected to Cloud Database", "#10b981");
         },
         onFailure: (err) => {
             updateStatus("FAILED", "offline");
-            writeLog("Connection Error: " + err.errorMessage, "#ef4444");
+            setTimeout(connectMQTT, 5000);
         }
     });
 }
@@ -64,15 +49,21 @@ client.onMessageArrived = (message) => {
     const topic = message.destinationName;
     const payload = message.payloadString;
 
+    // Handle Relay Status Updates
     if (topic.includes("/status")) {
         const id = topic.split('/')[2];
-        writeLog(`FEEDBACK: ${getDeviceName(id)} is ${payload}`, "#94a3b8");
         updateRelayUI(id, payload);
     }
     
+    // NEW: Handle Persistent Name Updates from Broker
+    if (topic.includes("/name")) {
+        const id = topic.split('/')[2];
+        localStorage.setItem(`relay-name-${id}`, payload);
+        applyNamesToDashboard();
+    }
+
     if (topic.includes("/availability")) {
         updateStatus(payload, payload === "ONLINE" ? "online" : "offline");
-        writeLog(`SYSTEM: ${payload}`, "#fbbf24");
     }
 };
 
@@ -121,7 +112,7 @@ function stopTimer(num) {
     }
 }
 
-// --- 5. SETTINGS & PERSISTENCE ---
+// --- 5. SETTINGS & MQTT PERSISTENCE ---
 
 function toggleView() {
     const mainView = document.getElementById('main-view');
@@ -129,16 +120,14 @@ function toggleView() {
     const navBtn = document.getElementById('nav-btn');
 
     if (mainView.classList.contains('view-active')) {
-        // Switch to Settings
         mainView.classList.replace('view-active', 'view-hidden');
         settingsView.classList.replace('view-hidden', 'view-active');
-        navBtn.innerHTML = CLOSE_SVG; // Update to 2D X icon
+        navBtn.innerHTML = CLOSE_SVG;
         loadSettingsInputs();
     } else {
-        // Switch to Dashboard
         settingsView.classList.replace('view-active', 'view-hidden');
         mainView.classList.replace('view-hidden', 'view-active');
-        navBtn.innerHTML = GEAR_SVG; // Update to 2D Gear icon
+        navBtn.innerHTML = GEAR_SVG;
     }
 }
 
@@ -154,22 +143,33 @@ function loadSettingsInputs() {
 function saveAllSettings() {
     for (let i = 1; i <= 4; i++) {
         const val = document.getElementById(`name-input-${i}`).value;
-        if (val) localStorage.setItem(`relay-name-${i}`, val);
+        if (val) {
+            // Save to Local Cache
+            localStorage.setItem(`relay-name-${i}`, val);
+            
+            // Publish to MQTT with RETAIN flag for Cloud Persistence
+            if (client.isConnected()) {
+                const nameMsg = new Paho.MQTT.Message(val);
+                nameMsg.destinationName = `home/relay/${i}/name`;
+                nameMsg.retained = true; 
+                client.send(nameMsg);
+            }
+        }
     }
     const logVis = document.getElementById('log-vis-checkbox').checked;
     localStorage.setItem('show-log-button', logVis);
     
     applyNamesToDashboard();
     toggleView();
-    writeLog("SYSTEM: Configuration updated", "#34d399");
+    writeLog("SYSTEM: Cloud Sync Complete", "#34d399");
 }
 
 function applyNamesToDashboard() {
     for (let i = 1; i <= 4; i++) {
         const savedName = localStorage.getItem(`relay-name-${i}`);
         if (savedName) {
-            const label = document.querySelector(`.relay-box[data-relay="${i}"] .device-name`);
-            if (label) label.innerText = savedName;
+            const labels = document.querySelectorAll(`.relay-box[data-relay="${i}"] .device-name`);
+            labels.forEach(el => el.innerText = savedName);
         }
     }
     const showLog = localStorage.getItem('show-log-button') === 'true';
@@ -187,8 +187,10 @@ function updateRelayUI(id, state) {
     const badge = document.getElementById(`badge-${id}`);
     const btnOn = document.getElementById(`btn-on-${id}`);
     const btnOff = document.getElementById(`btn-off-${id}`);
-    const box = badge.closest('.relay-box');
+    const box = document.querySelector(`.relay-box[data-relay="${id}"]`);
     
+    if(!badge || !box) return;
+
     badge.innerText = state;
     if (state === "ON") {
         box.classList.add('active');
@@ -235,7 +237,7 @@ setInterval(() => {
     const elapsed = Math.round((Date.now() - lastSignalTime) / 1000);
     const display = document.getElementById('heartbeat-timer');
     if (display) {
-        display.innerText = `Signal: ${elapsed}s ago`;
+        display.innerText = `${elapsed}S AGO`;
         display.style.color = elapsed > 30 ? "#ef4444" : "#94a3b8";
     }
 }, 1000);
