@@ -69,9 +69,9 @@ body {
 /* --- HEADER CONTROLS --- */
 .header-controls {
     display: flex;
-    flex-direction: row; /* Horizontal alignment */
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-end; /* Aligns pill and signal to the right */
+    justify-content: center;
 }
 
 /* --- Settings Gear --- */
@@ -104,10 +104,9 @@ body {
 .view-active {
     display: block !important;}
 
-/* Sub-header containing the heartbeat signal */
+/* Remove the old sub-header spacing */
 .sub-header {
-    padding-top: 5px;
-    margin-bottom: 10px;
+    display: none; /* We are moving the timer, so we hide the old container */
 }
 
 .status-pill {
@@ -116,10 +115,13 @@ body {
     height: fit-content;
 }
 
-#heartbeat-timer { 
-    font-size: 0.7em; 
-    color: #94a3b8; 
-    font-family: monospace; 
+#heartbeat-timer {
+    font-size: 0.6rem;
+    font-family: monospace;
+    color: var(--text-muted);
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 /* --- 3. PWA ACTION BUTTONS (INSTALL/SHARE) --- */
