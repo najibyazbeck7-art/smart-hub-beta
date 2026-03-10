@@ -34,9 +34,16 @@ body {
 /* --- 2. HEADER SECTION --- */
 .header {
     display: flex;
-    justify-content: space-between; 
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 2px;
+    padding-bottom: 10px; /* Reduced from 20px */
+    margin-bottom: 10px; /* Reduced space before actions */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+#main-title {
+    font-size: 1.1rem; /* Smaller title */
+    margin: 0;
 }
 
 .header h2 {
@@ -62,9 +69,9 @@ body {
 /* --- HEADER CONTROLS --- */
 .header-controls {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px; /* Slightly more gap for better vertical spacing */
+    flex-direction: row; /* Horizontal alignment */
+    align-items: center;
+    gap: 10px;
 }
 
 /* --- Settings Gear --- */
@@ -99,10 +106,14 @@ body {
 
 /* Sub-header containing the heartbeat signal */
 .sub-header {
-    text-align: left;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #334155;
+    padding-top: 5px;
+    margin-bottom: 10px;
+}
+
+.status-pill {
+    padding: 3px 8px; /* Thinner pill */
+    font-size: 0.65rem;
+    height: fit-content;
 }
 
 #heartbeat-timer { 
@@ -113,9 +124,7 @@ body {
 
 /* --- 3. PWA ACTION BUTTONS (INSTALL/SHARE) --- */
 .action-row {
-    display: flex;
-    gap: 8px;
-    margin: 8px 0;
+    margin-bottom: 8px; /* Reduce gap after Share/Install buttons */
 }
 
 .action-link {
